@@ -79,7 +79,7 @@
   import { genericos } from '@/store/genericos';
   import Footer from '@/components/generales/Footer.vue';
   import Logo from '@/components/generales/Logo.vue';
-  import { iniciarSesion, registrarse } from '@/services/authService'
+  //import { iniciarSesion, registrarse } from '@/services/authService'
   
   //data
   const usuario        = ref('');
@@ -100,11 +100,11 @@
     validarCampos();
     let res;
     if(registrar.value){
-      auth.registrarse(usuario.value, email.value, contras.value);
-      res = await registrarse(usuario.value, email.value, contras.value);
+      res = await auth.registrarse(usuario.value, email.value, contras.value);
+      //await registrarse(usuario.value, email.value, contras.value);
     }else{
-      auth.iniciarSesion(usuario.value, contras.value);
-      res = await iniciarSesion(usuario.value, contras.value);
+      res = await auth.iniciarSesion(usuario.value, contras.value);
+      //res = await iniciarSesion(usuario.value, contras.value);
     }
     if(res.resultado == 0){
       genericosStore.activarSnack = true;
@@ -114,7 +114,7 @@
     }
     inicioSecion.value = true;
     genericosStore.activarSnack = true;
-    genericosStore.textoSnack = 'Bienvenido!';
+    genericosStore.textoSnack = res.msj * " !";
     genericosStore.colorSnack = 'success';
     router.push({ name: 'Inicio' });
   };

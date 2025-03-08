@@ -4,7 +4,7 @@ import { apiFetch } from './api';
 export const iniciarSesion = async (usuario, contrasenia) => {
   return await apiFetch('auth.php', {
     method: 'POST',
-    body: JSON.stringify({ usuario, contrasenia }),
+    body: JSON.stringify({ nombre: usuario, contrasenia }),
   });
 };
 
@@ -12,6 +12,6 @@ export const iniciarSesion = async (usuario, contrasenia) => {
 export const registrarse = async (usuario, email, contrasenia) => {
   return await apiFetch('register.php', {
     method: 'POST',
-    body: JSON.stringify({ usuario, email, contrasenia }),
+    body: JSON.stringify({ nombre: usuario, email, contrasenia }),
   });
 };

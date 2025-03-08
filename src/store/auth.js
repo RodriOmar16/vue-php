@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { iniciarSesion, registrarse } from '@/services/authService'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -8,28 +9,32 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false
   }),
   actions: {
-    iniciarSesion(usuario, contrasenia) {
-      console.log("usuario, contrasenia: ", usuario, contrasenia)
-      const res = {};
+    async iniciarSesion(usuario, contrasenia) {
+      console.log("usuario:",usuario, ", contrasenia: ", contrasenia)
+      const res = await iniciarSesion(usuario, contrasenia);
       //peticion
-      return { resultado: res.resultado, msj: res.message }
-      this.usuario         = usuario;
-      this.contrasenia     = contrasenia;
-      this.isAuthenticated = true;
+      if(res.resultado != 0){
+        this.usuario         = usuario;
+        this.contrasenia     = contrasenia;
+        this.isAuthenticated = true;
+      }
+      return res;
     },
     cerrarSesion() {
       this.usuario = null;
       this.isAuthenticated = false
     },
-    registrarse(usuario, email, contrasenia){
+    async registrarse(usuario, email, contrasenia){
       console.log(usuario, email, contrasenia)
       //llamada de validaciones
-      const res = {};
-      return { resultado: res.resultado, msj: res.message }
-      this.usuario         = usuario;
-      this.email           = email;
-      this.contrasenia     = contrasenia;
-      this.isAuthenticated = true;
+      const res = await registrarse(usuario, email, contrasenia);
+      if(res.resultado != 0){
+        this.usuario         = usuario;
+        this.email           = email;
+        this.contrasenia     = contrasenia;
+        this.isAuthenticated = true;
+      }
+      return res;
     }
   },
   getters: {
