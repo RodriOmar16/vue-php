@@ -2,29 +2,30 @@
   <v-form @submit.prevent="hacerLogin" class="container">
     <v-card class="login mx-4" :class="xs ? 'ma-auto' : 'mx-4'">
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="py-1">
           Usuario
           <v-text-field
             class="mt-2"
             v-model="usuario"
             hide-details
             variant='outlined'
-            density='default'
+            density='comfortable'
             clearable
           ></v-text-field>
         </v-col>
-        <v-col cols="12" v-if="registrar">
+        <v-col cols="12" class="py-1" v-if="registrar">
           Email
           <v-text-field
             class="mt-2"
             v-model="email"
             hide-details
             variant='outlined'
+            density='comfortable'
             dense
             clearable
           ></v-text-field>
         </v-col>
-        <v-col cols="12">
+        <v-col cols="12" class="py-1">
           Contraseña
           <v-text-field
             class="mt-2"
@@ -32,20 +33,21 @@
             hide-details
             type="password"
             variant='outlined'
+            density='comfortable'
             dense
             clearable
           ></v-text-field>
         </v-col>
-        <v-col cols="12" class="d-flex justify-center">
+        <v-col cols="12" class="d-flex justify-center pt-2 pb-1">
           <v-btn color="primary" :loading="inicioSecion" type="submit">
-            {{ registrar ? 'Registrarse' : 'Iniciar seción' }}
+            {{ registrar ? 'Registrarse' : 'Iniciar sesión' }}
           </v-btn>
         </v-col>
       </v-row>
-      <v-row v-if="!registrar">
-        <v-col cols="12" class="d-flex justify-center">
+      <v-row clas="">
+        <v-col cols="12" class="d-flex justify-center py-1">
           <div class="subtitle-2 text-orange" @click="registrarse()">
-            ¿Eres nuevo? Registrate aquí
+            {{ registrar ? 'Iniciar sesión' : '¿Eres nuevo? Registrate aquí' }}
           </div>
         </v-col>
       </v-row>
@@ -78,6 +80,7 @@
       genericosStore.activarSnack = true;
       genericosStore.textoSnack   = 'Ingrese usuario o contraseña faltante'
       genericosStore.colorSnack   = 'info';
+      return 
     }
     if(registrar.value){
       auth.registrarse(usuario.value, contras.value);
@@ -90,8 +93,8 @@
   };
   const registrarse = () => {
     // abrir o mostrar formulario para registro
-    registrar.value = true;
-    console.log("registrar nuevo")
+    registrar.value = !registrar.value;
+    //console.log("registrar nuevo")
   };
 </script>
 

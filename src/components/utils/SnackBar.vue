@@ -3,20 +3,20 @@
     v-model="snackbar"
     multi-line
     :color="color"
-    class="ma-0 pa-0"
+    class="pa-0"
   >
     <v-row>
-      <v-col cols="11">
+      <v-col cols="10" class="d-flex aling-center">
         <span>{{ mensaje }}</span>
       </v-col>
-      <v-col cols="1" class="d-flex justify-end">
+      <v-col cols="2" class="d-flex justify-end">
         <v-btn
           icon
-          small
+          small variant="plain"
           @click="cerrarSnackbar"
-          class="pb-2"
+          class=""
         >
-          <v-icon>fa-solid fa-times</v-icon>
+          <v-icon>fa-solid fa-xmark</v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -27,7 +27,7 @@
 import { computed } from 'vue';
 
 // Props accesibles automáticamente
-defineProps({
+const props = defineProps({
   modelValue: Boolean,
   mensaje: {
     type: String,
@@ -44,7 +44,7 @@ const emit = defineEmits(['update:modelValue']);
 
 // Computed para manejar el `v-model`
 const snackbar = computed({
-  get: () => modelValue, // Usamos directamente `modelValue`, que es la prop reactiva
+  get: () => props.modelValue, // Usamos directamente `modelValue`, que es la prop reactiva
   set: (value) => emit('update:modelValue', value), // Emitimos la actualización correctamente
 });
 
