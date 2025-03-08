@@ -1,77 +1,94 @@
 <template>
-  <v-form @submit.prevent="hacerLogin" class="container">
-    <v-card class="login mx-4" :class="xs ? 'ma-auto' : 'mx-4'">
-      <v-row>
-        <v-col cols="12" class="py-1">
-          Usuario
-          <v-text-field
-            class="mt-2"
-            v-model="usuario"
-            hide-details
-            variant='outlined'
-            density='comfortable'
-            clearable
-          ></v-text-field>
+  <v-row class="container-full pa-0 ma-0" no-gutters>
+    <v-col cols="12" class="py-0 ">
+      <v-row class="container-full-login" no-gutters>
+        <v-col cols="12" sm="5" md="4" class="d-flex justify-center container-color-login py-0 px-4">
+          <v-form @submit.prevent="hacerLogin" class="d-flex justify-center ma-auto">
+            <v-card :max-width="xs? 350 : 350">
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" class="py-1">
+                    Usuario
+                    <v-text-field
+                      class=""
+                      v-model="usuario"
+                      hide-details
+                      variant='outlined'
+                      density='comfortable'
+                      clearable
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" class="py-1" v-if="registrar">
+                    Email
+                    <v-text-field
+                      class=""
+                      v-model="email"
+                      hide-details
+                      variant='outlined'
+                      density='comfortable'
+                      dense
+                      clearable
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" class="py-1">
+                    Contraseña
+                    <v-text-field
+                      class=""
+                      v-model="contras"
+                      hide-details
+                      type="password"
+                      variant='outlined'
+                      density='comfortable'
+                      dense
+                      clearable
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" class="d-flex justify-center pt-2 pb-1">
+                    <v-btn color="primary" :loading="inicioSecion" type="submit">
+                      {{ registrar ? 'Registrarse' : 'Iniciar sesión' }}
+                    </v-btn>
+                  </v-col>
+                </v-row>
+                <v-row clas="">
+                  <v-col cols="12" class="d-flex justify-center py-1">
+                    <div class="subtitle-2 text-orange" @click="registrarse()">
+                      {{ registrar ? 'Iniciar sesión' : '¿Eres nuevo? Registrate aquí' }}
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-form>
         </v-col>
-        <v-col cols="12" class="py-1" v-if="registrar">
-          Email
-          <v-text-field
-            class="mt-2"
-            v-model="email"
-            hide-details
-            variant='outlined'
-            density='comfortable'
-            dense
-            clearable
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" class="py-1">
-          Contraseña
-          <v-text-field
-            class="mt-2"
-            v-model="contras"
-            hide-details
-            type="password"
-            variant='outlined'
-            density='comfortable'
-            dense
-            clearable
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" class="d-flex justify-center pt-2 pb-1">
-          <v-btn color="primary" :loading="inicioSecion" type="submit">
-            {{ registrar ? 'Registrarse' : 'Iniciar sesión' }}
-          </v-btn>
+        <v-col cols="12" sm="7" md="8" v-if="!xs" class="py-0">
+          <Logo/>
         </v-col>
       </v-row>
-      <v-row clas="">
-        <v-col cols="12" class="d-flex justify-center py-1">
-          <div class="subtitle-2 text-orange" @click="registrarse()">
-            {{ registrar ? 'Iniciar sesión' : '¿Eres nuevo? Registrate aquí' }}
-          </div>
-        </v-col>
-      </v-row>
-    </v-card>
-  </v-form>
+    </v-col>
+    <v-col cols="12" class="py-0 bg-footer" style="height: 5vh;"><Footer v-if="route.name === 'login'" /></v-col>
+  </v-row>
 </template>
 
 <script setup>
   //imports
   import { ref } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { useRouter, useRoute } from 'vue-router';
   import { useDisplay } from 'vuetify/lib/framework.mjs';
   import { useAuthStore } from '@/store/auth';
   import { genericos } from '@/store/genericos';
+  import Footer from '@/components/generales/Footer.vue';
+  import Logo from '@/components/generales/Logo.vue';
   
   //data
-  const usuario = ref('');
-  const contras = ref('');
-  const email   = ref('');
-  const inicioSecion = ref(false);
-  const registrar = ref(false);
-  const router = useRouter();
-  const auth = useAuthStore();
-  const { xs } = useDisplay();
+  const usuario        = ref('');
+  const contras        = ref('');
+  const email          = ref('');
+  const inicioSecion   = ref(false);
+  const registrar      = ref(false);
+  const router         = useRouter();
+  const route          = useRoute();
+  const auth           = useAuthStore();
+  const { xs }         = useDisplay();
   const genericosStore = genericos();
   
   //methods
@@ -99,11 +116,14 @@
 </script>
 
 <style scoped>
-  .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Ocupa todo el alto de la pantalla */
+  .container-full{
+    height: 100%; /* Ocupa todo el alto de la pantalla */
+    width: 100%;
+  }
+  .container-full-login{
+    height: 95vh;
+  }
+  .container-color-login {
     background: linear-gradient(to right, #00c6ff, #0072ff); /* Fondo degradado */
   }
   .login{
