@@ -3,22 +3,32 @@ import { defineStore } from 'pinia';
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     usuario: null,
+    email: null,
     contrasenia: null,
     isAuthenticated: false
   }),
   actions: {
-    iniciarSesion(usuario) {
-      this.usuario = usuario;
+    iniciarSesion(usuario, contrasenia) {
+      console.log("usuario, contrasenia: ", usuario, contrasenia)
+      const res = {};
+      //peticion
+      return { resultado: res.resultado, msj: res.message }
+      this.usuario         = usuario;
+      this.contrasenia     = contrasenia;
       this.isAuthenticated = true;
     },
     cerrarSesion() {
       this.usuario = null;
       this.isAuthenticated = false
     },
-    registrarse(usuario, contrasenia){
-      console.log(usuario, contrasenia)
-      this.usuario = usuario;
-      this.contrasenia = contrasenia;
+    registrarse(usuario, email, contrasenia){
+      console.log(usuario, email, contrasenia)
+      //llamada de validaciones
+      const res = {};
+      return { resultado: res.resultado, msj: res.message }
+      this.usuario         = usuario;
+      this.email           = email;
+      this.contrasenia     = contrasenia;
       this.isAuthenticated = true;
     }
   },

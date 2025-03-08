@@ -6,7 +6,7 @@
     class="pa-0"
   >
     <v-row>
-      <v-col cols="10" class="d-flex aling-center">
+      <v-col cols="10" class="d-flex align-center">
         <span>{{ mensaje }}</span>
       </v-col>
       <v-col cols="2" class="d-flex justify-end">

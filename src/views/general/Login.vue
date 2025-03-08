@@ -3,7 +3,7 @@
     <v-col cols="12" class="py-0 ">
       <v-row class="container-full-login" no-gutters>
         <v-col cols="12" sm="5" md="4" class="d-flex justify-center container-color-login py-0 px-4">
-          <v-form @submit.prevent="hacerLogin" class="d-flex justify-center ma-auto">
+          <v-form @submit.prevent="hacerLogin()" class="d-flex justify-center ma-auto">
             <v-card :max-width="xs? 350 : 350">
               <v-card-text>
                 <v-row>
@@ -26,6 +26,7 @@
                       hide-details
                       variant='outlined'
                       density='comfortable'
+                      :error="errorEmail"
                       dense
                       clearable
                     ></v-text-field>
@@ -51,7 +52,7 @@
                 </v-row>
                 <v-row clas="">
                   <v-col cols="12" class="d-flex justify-center py-1">
-                    <div class="subtitle-2 text-orange" @click="registrarse()">
+                    <div class="subtitle-2 text-orange" @click="controlarRegistro()">
                       {{ registrar ? 'Iniciar sesión' : '¿Eres nuevo? Registrate aquí' }}
                     </div>
                   </v-col>
@@ -78,6 +79,7 @@
   import { genericos } from '@/store/genericos';
   import Footer from '@/components/generales/Footer.vue';
   import Logo from '@/components/generales/Logo.vue';
+  import { iniciarSesion, registrarse } from '@/services/authService'
   
   //data
   const usuario        = ref('');
@@ -90,28 +92,63 @@
   const auth           = useAuthStore();
   const { xs }         = useDisplay();
   const genericosStore = genericos();
+  const errorEmail     = ref(false);
+  const emailPattern   = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   
   //methods
-  const hacerLogin = () => {
-    if(!usuario.value || !contras.value){ 
+  const hacerLogin = async () => {
+    validarCampos();
+    let res;
+    if(registrar.value){
+      auth.registrarse(usuario.value, email.value, contras.value);
+      res = await registrarse(usuario.value, email.value, contras.value);
+    }else{
+      auth.iniciarSesion(usuario.value, contras.value);
+      res = await iniciarSesion(usuario.value, contras.value);
+    }
+    if(res.resultado == 0){
       genericosStore.activarSnack = true;
-      genericosStore.textoSnack   = 'Ingrese usuario o contraseña faltante'
-      genericosStore.colorSnack   = 'info';
+      genericosStore.textoSnack   = res.msj;
+      genericosStore.colorSnack   = 'error';
       return 
     }
-    if(registrar.value){
-      auth.registrarse(usuario.value, contras.value);
-    }else{
-      inicioSecion.value = true;
-      auth.iniciarSesion(usuario.value);
-    }
     inicioSecion.value = true;
-    router.push({name:'Inicio'});
+    genericosStore.activarSnack = true;
+    genericosStore.textoSnack = 'Bienvenido!';
+    genericosStore.colorSnack = 'success';
+    router.push({ name: 'Inicio' });
   };
-  const registrarse = () => {
-    // abrir o mostrar formulario para registro
+  const validarEmail = () => {
+    errorEmail.value = !emailPattern.test(email.value);  // Establece si el formato es incorrecto
+    return 
+  };
+  const validarCampos = () => {
+    if(registrar.value){
+      if( !email.value || !emailPattern.test(email.value)){
+        genericosStore.activarSnack = true;
+        genericosStore.textoSnack   = 'Ingresar email válido.';
+        genericosStore.colorSnack   = 'info';
+        return 
+      }
+    }
+    if(!usuario.value || !contras.value){
+      if(!usuario.value){
+        genericosStore.activarSnack = true;
+        genericosStore.textoSnack   = 'Ingresar el usuario';
+        genericosStore.colorSnack   = 'info';
+        return 
+      }else {
+        if(!contras.value){
+          genericosStore.activarSnack = true;
+          genericosStore.textoSnack   = 'Ingresar una contraseña';
+          genericosStore.colorSnack   = 'info';
+          return 
+        }
+      }
+    }
+  };
+  const controlarRegistro = () => {
     registrar.value = !registrar.value;
-    //console.log("registrar nuevo")
   };
 </script>
 
