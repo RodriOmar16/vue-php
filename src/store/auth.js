@@ -10,7 +10,6 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     async iniciarSesion(usuario, contrasenia) {
-      console.log("usuario:",usuario, ", contrasenia: ", contrasenia)
       const res = await iniciarSesion(usuario, contrasenia);
       //peticion
       if(res.resultado != 0){
@@ -21,7 +20,9 @@ export const useAuthStore = defineStore('auth', {
       return res;
     },
     cerrarSesion() {
-      this.usuario = null;
+      this.usuario     = null;
+      this.email       = null;
+      this.contrasenia = null;
       this.isAuthenticated = false
     },
     async registrarse(usuario, email, contrasenia){

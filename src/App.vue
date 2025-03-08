@@ -1,6 +1,6 @@
 <template>
   <v-app style="width: 100%;">
-    <v-app-bar color="primary" dark  v-if="route.name && route.name !== 'login'">
+    <v-app-bar color="primary" dark  v-if="route.name && route.name !== 'login' && route.name !== 'Login'">
       <!-- Logo o título -->
       <v-app-bar-title>Mi Navbar</v-app-bar-title>
 

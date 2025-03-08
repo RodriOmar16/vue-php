@@ -66,7 +66,7 @@
         </v-col>
       </v-row>
     </v-col>
-    <v-col cols="12" class="py-0 bg-footer" style="height: 5vh;"><Footer v-if="route.name === 'login'" /></v-col>
+    <v-col cols="12" class="py-0 bg-footer" style="height: 5vh;"><Footer /></v-col>
   </v-row>
 </template>
 
@@ -96,8 +96,39 @@
   const emailPattern   = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   
   //methods
+  const validarCampos = () => {
+    let error = {  resultado: 1,  msj: '' };
+
+    if(registrar.value){
+      if( !email.value || !emailPattern.test(email.value)){
+        error.resultado = 0;
+        error.msj       = 'Ingresar email válido.';
+        return error
+      }
+    }
+    if(!usuario.value || !contras.value){
+      if(!usuario.value){
+        error.resultado = 0;
+        error.msj       = 'Ingresar el usuario';
+        return error
+      }else {
+        if(!contras.value){
+          error.resultado = 0;
+          error.msj       = 'Ingresar una contraseña';
+          return error
+        }
+      }
+    }
+    return error;
+  };
   const hacerLogin = async () => {
-    validarCampos();
+    let error = validarCampos();
+    if(error && error.resultado == 0){
+      genericosStore.activarSnack = true;
+      genericosStore.textoSnack   = error.msj;
+      genericosStore.colorSnack   = 'info';
+      return 
+    }
     let res;
     if(registrar.value){
       res = await auth.registrarse(usuario.value, email.value, contras.value);
@@ -110,42 +141,21 @@
       genericosStore.activarSnack = true;
       genericosStore.textoSnack   = res.msj;
       genericosStore.colorSnack   = 'error';
+      usuario.value = '';
+      email.value   = ''; 
+      contras.value = '';
       return 
     }
+    console.log("res: ", res)
     inicioSecion.value = true;
     genericosStore.activarSnack = true;
-    genericosStore.textoSnack = res.msj * " !";
+    genericosStore.textoSnack = res.msj + " !";
     genericosStore.colorSnack = 'success';
     router.push({ name: 'Inicio' });
   };
-  const validarEmail = () => {
-    errorEmail.value = !emailPattern.test(email.value);  // Establece si el formato es incorrecto
-    return 
-  };
-  const validarCampos = () => {
-    if(registrar.value){
-      if( !email.value || !emailPattern.test(email.value)){
-        genericosStore.activarSnack = true;
-        genericosStore.textoSnack   = 'Ingresar email válido.';
-        genericosStore.colorSnack   = 'info';
-        return 
-      }
-    }
-    if(!usuario.value || !contras.value){
-      if(!usuario.value){
-        genericosStore.activarSnack = true;
-        genericosStore.textoSnack   = 'Ingresar el usuario';
-        genericosStore.colorSnack   = 'info';
-        return 
-      }else {
-        if(!contras.value){
-          genericosStore.activarSnack = true;
-          genericosStore.textoSnack   = 'Ingresar una contraseña';
-          genericosStore.colorSnack   = 'info';
-          return 
-        }
-      }
-    }
+  const hacerLogout = () => {
+    auth.cerrarSesion();
+    router.push({ name: 'Login' });
   };
   const controlarRegistro = () => {
     registrar.value = !registrar.value;
