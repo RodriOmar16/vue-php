@@ -17,8 +17,13 @@ export const cerrarSesion = () => {
 
 // Función para registrarse (si la necesitas)
 export const registrarse = async (usuario, email, contrasenia) => {
-  return await apiFetch('register.php', {
+  const res = await apiFetch('register.php', {
     method: 'POST',
     body: JSON.stringify({ nombre: usuario, email, contrasenia }),
   });
+  console.log("authServices - res: ", res)
+  if(res.resultado == 1 && res.token){
+    localStorage.setItem('token',res.token);
+  }
+  return res;
 };

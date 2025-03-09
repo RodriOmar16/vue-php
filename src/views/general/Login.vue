@@ -2,7 +2,7 @@
   <v-row class="container-full pa-0 ma-0" no-gutters>
     <v-col cols="12" class="py-0 ">
       <v-row class="container-full-login" no-gutters>
-        <v-col cols="12" sm="5" md="4" class="d-flex justify-center container-color-login py-0 px-4">
+        <v-col cols="12" sm="5" md="5" class="d-flex justify-center container-color-login py-0 px-4">
           <v-form @submit.prevent="hacerLogin()" class="d-flex justify-center ma-auto">
             <v-card :max-width="xs? 350 : 350">
               <v-card-text>
@@ -61,12 +61,12 @@
             </v-card>
           </v-form>
         </v-col>
-        <v-col cols="12" sm="7" md="8" v-if="!xs" class="py-0">
+        <v-col cols="12" sm="7" md="7" v-if="!xs" class="py-0">
           <Logo/>
         </v-col>
       </v-row>
     </v-col>
-    <v-col cols="12" class="py-0 bg-footer" style="height: 5vh;"><Footer /></v-col>
+    <!--<v-col cols="12" class="py-0 bg-footer" style="height: 5vh;"><Footer /></v-col>-->
   </v-row>
 </template>
 
@@ -129,7 +129,8 @@
       genericosStore.colorSnack   = 'info';
       return 
     }
-    let res;
+    inicioSecion.value = true;
+    let res; 
     if(registrar.value){
       res = await auth.registrarse(usuario.value, email.value, contras.value);
       //await registrarse(usuario.value, email.value, contras.value);
@@ -137,6 +138,7 @@
       res = await auth.iniciarSesion(usuario.value, contras.value);
       //res = await iniciarSesion(usuario.value, contras.value);
     }
+    inicioSecion.value = false;
     if(res.resultado == 0){
       genericosStore.activarSnack = true;
       genericosStore.textoSnack   = res.msj;
@@ -146,8 +148,8 @@
       contras.value = '';
       return 
     }
-    console.log("res: ", res)
-    inicioSecion.value = true;
+    console.log("Login.vue - res: ", res)
+    
     genericosStore.activarSnack = true;
     genericosStore.textoSnack = res.msj + " !";
     genericosStore.colorSnack = 'success';
@@ -168,13 +170,13 @@
     width: 100%;
   }
   .container-full-login{
-    height: 95vh;
+    height: 100vh;/*95vh;*/
   }
   .container-color-login {
     background: linear-gradient(to right, #00c6ff, #0072ff); /* Fondo degradado */
   }
   .login{
-    padding: 20px;
+    padding: 20px 25px;
     width: 100%;
     max-width: 400px; /* Tamaño máximo del formulario */
   }

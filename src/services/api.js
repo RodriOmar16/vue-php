@@ -3,10 +3,13 @@ const API_BASE_URL = 'http://localhost/miapp-api/'; // Cambia esto a la URL de t
 // Método genérico para peticiones HTTP usando `fetch`
 export const apiFetch = async (endpoint, options = {}) => {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && {Authorization: `Bearer ${token}` })
+    };
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       ...options, // Extiende con las opciones proporcionadas (método, body, etc.)
     });
 

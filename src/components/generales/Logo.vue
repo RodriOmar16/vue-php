@@ -3,7 +3,7 @@
     <v-row class="pa-0 ma-0 fill-height" justify="center" align="center">
       <v-col cols="12" sm="8" md="6" class="pa-0 d-flex justify-center align-center">
         <v-img
-          src="src/assets/images/innovartic-fav-icon.svg"
+          src="src/assets/images/innovartic.png"
           class="svg-image"
           max-width="350"
           contain
