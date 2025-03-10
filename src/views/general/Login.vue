@@ -8,7 +8,7 @@
               <v-card-text>
                 <v-row>
                   <v-col cols="12" class="py-1">
-                    Usuario
+                    Nombre o Usuario
                     <v-text-field
                       class=""
                       v-model="usuario"
