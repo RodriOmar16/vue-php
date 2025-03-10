@@ -133,10 +133,8 @@
     let res; 
     if(registrar.value){
       res = await auth.registrarse(usuario.value, email.value, contras.value);
-      //await registrarse(usuario.value, email.value, contras.value);
     }else{
       res = await auth.iniciarSesion(usuario.value, contras.value);
-      //res = await iniciarSesion(usuario.value, contras.value);
     }
     inicioSecion.value = false;
     if(res.resultado == 0){
@@ -148,11 +146,10 @@
       contras.value = '';
       return 
     }
-    console.log("Login.vue - res: ", res)
     
-    genericosStore.activarSnack = true;
+    /*genericosStore.activarSnack = true;
     genericosStore.textoSnack = res.msj + " !";
-    genericosStore.colorSnack = 'success';
+    genericosStore.colorSnack = 'success';*/
     router.push({ name: 'Inicio' });
   };
   const hacerLogout = () => {
