@@ -1,0 +1,141 @@
+hice varios cambios:
+tabla usuarios queda así: 
+CREATE TABLE esquema1.usuarios (
+	id serial NOT NULL,
+	nombre varchar(100) NOT NULL,
+	email varchar(150) NOT NULL,
+	"password" text NOT NULL,
+	creado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	username varchar(30) NULL,
+	inhabilitado int4 NULL,
+	rol_id int4 NOT NULL,
+	actualizado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT usuarios_email_key UNIQUE (email),
+	CONSTRAINT usuarios_pkey PRIMARY KEY (id),
+	CONSTRAINT fk_rol FOREIGN KEY (rol_id) REFERENCES esquema1.roles(id)
+);
+
+tabla clientes:
+CREATE TABLE esquema1.clientes (
+	id serial NOT NULL,
+	nombre varchar(100) NOT NULL,
+	email varchar(100) NOT NULL,
+	edad int4 NULL,
+	telefono varchar(15) NULL,
+	direccion varchar(30) NULL,
+	inhabilitado int4 NULL,
+	creado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	actualizado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT clientes_pkey PRIMARY KEY (id)
+);
+
+tabla dias:
+CREATE TABLE esquema1.dias{
+	id serial not null primary key,
+	nombre varchar(15)
+};
+
+tabla combo_dias:
+CREATE TABLE esquema1.combo_dias (
+    id SERIAL PRIMARY KEY,
+    combo_id INTEGER REFERENCES esquema1.combos(id),
+    dia_id INTEGER REFERENCES esquema1.dias(id)
+);
+
+tabla horarios:
+CREATE TABLE esquema1.horarios (
+    id SERIAL PRIMARY KEY,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL
+);
+
+tabla comidas:
+CREATE TABLE esquema1.comidas (
+    id SERIAL PRIMARY KEY,
+    nombre varchar(50),
+    descripcion varchar(50)
+);
+
+tabla combo_comidas:
+CREATE TABLE esquema1.combo_comidas (
+    id SERIAL PRIMARY KEY,
+    combo_id INTEGER REFERENCES esquema1.combos(id),
+    comida_id INTEGER REFERENCES esquema1.comida(id)
+);
+
+tabla bebidas:
+CREATE TABLE esquema1.bebidas (
+    id SERIAL PRIMARY KEY,
+    nombre varchar(50),
+    litros decimal(5,2),
+    inhabilitada INTEGER default NULL
+);
+
+tabla combo_bebidas:
+CREATE TABLE esquema1.combo_comidas (
+    id SERIAL PRIMARY KEY,
+    combo_id INTEGER REFERENCES esquema1.combos(id),
+    bebida_id INTEGER REFERENCES esquema1.bebidas(id)
+);
+
+
+tabla menu:
+CREATE TABLE esquema1.menus (
+    id SERIAL PRIMARY KEY,
+    descripcion varchar(30),
+    inhabilitado INTEGER default null
+);
+
+tabla menu_comidas, une menus y comidas
+CREATE TABLE esquema1.menu_comidas (
+    id SERIAL PRIMARY KEY,
+    menu_id INTEGER REFERENCES esquema1.menus(id),
+    comida_id INTEGER REFERENCES esquema1.comidas(id)
+);
+
+tabla combo_menus_comidas, une 1 combo y los menus que tenga:
+CREATE TABLE esquema1.combo_menus_comidas (
+    id SERIAL PRIMARY KEY,
+    combo_id INTEGER REFERECES esquema1.combos(id),
+    menu_comidas_id INTEGER REFERENCES esquema1.menu_comidas(id)
+);
+-----------------------------------------------------------------------------------------
+CREATE TABLE combos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio_base DECIMAL(10, 2) NOT NULL,
+    capacidad_personas INT NOT NULL,
+    precio_adicional DECIMAL(10, 2),
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE combo_detalle (
+    id SERIAL PRIMARY KEY,
+    combo_id INT REFERENCES combos(id),
+    tipo VARCHAR(20) CHECK (tipo IN ('instalacion', 'bebida', 'comida', 'otro')),
+    descripcion TEXT,
+    cantidad INT,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-------------------------------------------------------------------------------------
+CREATE TABLE esquema1.combos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    cantidad_personas INTEGER NOT NULL,
+    precio_base DECIMAL(10, 2) NOT NULL,
+    capacidad_personas INT NOT NULL,
+    precio_adicional_persona DECIMAL(10, 2),
+    inhabilitada INTEGER DEFAULT null,
+    servicio INTEGER, -- 1 o NULL dependiendo si cuenta con servicio de mozos
+    invitacion INTEGER, -- 1 o NULL dependiendo si cuenta con invitacion virtual
+    bebidas INTEGER, -- 1O NULL dependiendo si cuenta con bebidas, tabla combo_bebidas
+    observacio TEXT,
+    combos_menu_comida_id INTEGER REFERENCES esquema1.combo_menus_comidas(id)
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+--------------------------------------------------------------------------------
