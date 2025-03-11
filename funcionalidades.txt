@@ -1,0 +1,58 @@
+quiero disponer de 3 roles por ahora:
+- DBA: yo, el máximo poder
+- admin: gran cantidad de cosas para hacer, abm de reservas, abm de usuarios organizadores, abm de combos, etc...
+- organizador: abm de reservas
+
+quiero que mi navbar tenga las siguientes opciones y sus descripcion es: 
+- inicio: 
+	banner principal con breve descripcion de lo que trata la web, 
+	imagenes en galeria del salon, juegos, atracciones etc..
+	Equipo (imagenes y nombre del equipo)
+	Testimonio
+	seccion	sobre nosotros 
+	footer
+- Reservas:
+	en esta vista quiero que tenga varias cosas.
+	Abm de reversas
+	crear, eliminar, actualizar reservas
+	obtener todas las reservas por: 
+		rango de fechas, 
+		datos del cliente (para una nueva res),
+		tipo de combo,
+		cantidad de personas ,
+		estado de la reserva
+- Combos:
+	abm de combos:
+	imagenes, pdf,
+	detalles de lo que los combos ofrecen:
+		tiene servicio ? 
+		con comida? menu de niños y/o adultos ?
+		capacidad personas
+		precio por capacidad
+		tiene bebidas?
+		observaciones
+		tiene invitacion virtual ?
+	instalacion o juegos que incluye
+	dias de uso
+	adicional de persona
+- Usuarios (opcion oculta solo para roles admin & dba):
+	abm de usuarios
+	asignacion de roles 
+- Roles (solo DBA): abm de roles 
+
+_________________________________________________________________________
+El login pasaria a ser solo para el personal. Los dueños y los empleados.
+
+Una para que:
+	El cliente reserve:
+	Vea sin registrarse:
+		El lugar fotos 
+		Testimonios, 
+		Combos disponibles
+Otra el panel de administracion para el salon
+
+
+osea por un lado el cliente de autogestiona la reserva y solo paga..
+cuando no va o no quiere la reserva habla al salon y recien ahí  desde kalu se le da de baja la res
+
+desde el lado del administrador, ellos podrian cargar tambien reservas, combos o modificar lo que quieran y hacer todo lo que ya te dije

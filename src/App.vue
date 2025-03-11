@@ -10,6 +10,11 @@
       <v-btn text>Inicio</v-btn>
       <v-btn text>Sobre Nosotros</v-btn>
       <v-btn text>Contacto</v-btn>
+
+      <RouterLink to="Inicio">Inicio</RouterLink>
+      <RouterLink to="Combos">Combos</RouterLink>
+      <RouterLink to="Combos">Reservar</RouterLink>
+
       <v-btn variant="plain" @click="logout()">
         <v-icon>fa-solid fa-arrow-right-from-bracket</v-icon>
         <v-tooltip

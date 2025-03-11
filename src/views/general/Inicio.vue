@@ -1,6 +1,6 @@
 <template>
   <div style="margin-top: 70px;">
-    Bienvenid@: {{ auth.usuario }}, Autenticado?  {{ auth.isAuthenticated }}
+    Bienvenid@: {{ auth.usuario ? auth.usuario : auth.username }}, Autenticado?  {{ auth.isAuthenticated }}
   </div>
 </template>
 <script setup>

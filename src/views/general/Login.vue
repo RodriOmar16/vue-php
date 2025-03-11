@@ -8,15 +8,39 @@
               <v-card-text>
                 <v-row>
                   <v-col cols="12" class="py-1">
-                    Nombre o Usuario
-                    <v-text-field
-                      class=""
-                      v-model="usuario"
-                      hide-details
-                      variant='outlined'
-                      density='comfortable'
-                      clearable
-                    ></v-text-field>
+                    <div v-if="!registrar">
+                      Nombre o Usuario
+                      <v-text-field
+                        class=""
+                        v-model="usuario"
+                        hide-details
+                        variant='outlined'
+                        density='comfortable'
+                        clearable
+                      ></v-text-field>
+                    </div>
+                    <div v-if="registrar">
+                      Nombre y Apellido
+                      <v-text-field
+                        class=""
+                        v-model="nombre"
+                        hide-details
+                        variant='outlined'
+                        density='comfortable'
+                        clearable
+                      ></v-text-field>
+                    </div>
+                    <div v-if="registrar" class="pt-2">
+                      Nombre de Usuario
+                      <v-text-field
+                        class=""
+                        v-model="username"
+                        hide-details
+                        variant='outlined'
+                        density='comfortable'
+                        clearable
+                      ></v-text-field>
+                    </div>
                   </v-col>
                   <v-col cols="12" class="py-1" v-if="registrar">
                     Email
@@ -77,12 +101,12 @@
   import { useDisplay } from 'vuetify/lib/framework.mjs';
   import { useAuthStore } from '@/store/auth';
   import { genericos } from '@/store/genericos';
-  import Footer from '@/components/generales/Footer.vue';
   import Logo from '@/components/generales/Logo.vue';
-  //import { iniciarSesion, registrarse } from '@/services/authService'
   
   //data
   const usuario        = ref('');
+  const nombre         = ref('');
+  const username       = ref('');
   const contras        = ref('');
   const email          = ref('');
   const inicioSecion   = ref(false);
@@ -105,19 +129,27 @@
         error.msj       = 'Ingresar email válido.';
         return error
       }
-    }
-    if(!usuario.value || !contras.value){
+      if(!nombre.value){
+        error.resultado = 0;
+        error.msj       = 'Ingresar Nombre y Apellido';
+        return error
+      }  
+      if(!username.value){
+        error.resultado = 0;
+        error.msj       = 'Ingresar Nombre de Usuario';
+        return error
+      }    
+    }else{
       if(!usuario.value){
         error.resultado = 0;
         error.msj       = 'Ingresar el usuario';
         return error
-      }else {
-        if(!contras.value){
-          error.resultado = 0;
-          error.msj       = 'Ingresar una contraseña';
-          return error
-        }
       }
+    }
+    if(!contras.value){
+      error.resultado = 0;
+      error.msj       = 'Ingresar una contraseña';
+      return error
     }
     return error;
   };
@@ -132,7 +164,7 @@
     inicioSecion.value = true;
     let res; 
     if(registrar.value){
-      res = await auth.registrarse(usuario.value, email.value, contras.value);
+      res = await auth.registrarse(nombre.value, username.value, email.value, contras.value);
     }else{
       res = await auth.iniciarSesion(usuario.value, contras.value);
     }
@@ -141,20 +173,14 @@
       genericosStore.activarSnack = true;
       genericosStore.textoSnack   = res.msj;
       genericosStore.colorSnack   = 'error';
-      usuario.value = '';
-      email.value   = ''; 
-      contras.value = '';
+      usuario.value  = '';
+      email.value    = ''; 
+      contras.value  = '';
+      nombre.value   = '';
+      username.value = '';
       return 
     }
-    
-    /*genericosStore.activarSnack = true;
-    genericosStore.textoSnack = res.msj + " !";
-    genericosStore.colorSnack = 'success';*/
     router.push({ name: 'Inicio' });
-  };
-  const hacerLogout = () => {
-    auth.cerrarSesion();
-    router.push({ name: 'Login' });
   };
   const controlarRegistro = () => {
     registrar.value = !registrar.value;
