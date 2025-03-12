@@ -37,6 +37,7 @@ quiero que mi navbar tenga las siguientes opciones y sus descripcion es:
 	adicional de persona
 - Usuarios (opcion oculta solo para roles admin & dba):
 	abm de usuarios
+	abm de clientes o al momento de editar la reserva que se edite el cliente, ya que existe su id
 	asignacion de roles 
 - Roles (solo DBA): abm de roles 
 

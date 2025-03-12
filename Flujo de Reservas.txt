@@ -5,7 +5,7 @@ Filtros:
 	Fecha_tentativa
 	Horario
 	combo_habilitados
- -> fecha obligatorio en la busqueda y estado Disponible, 
+ -> fecha obligatorio en la busqueda y debo buscar por estado != Disponible, 
 	filtra reservas disp con combos, 
 	horarios disponibles para ese dia
     se muestra todo en un v-data-table o lista (a definir)
@@ -44,3 +44,41 @@ Reservar:
 		grabar res y cliente
 		pagar, pasada a estado pendiente
 		cambia estado a confirmada	
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+reservar cliente explicacion de como ser usa
+al abrir el formulario de reservas se ejecuta la consulta que trae los combos armados para los cliente (combos habilitados)
+incialmente se muestras 3 campos:
+	Fecha
+	Horarios
+	Combos habilitado
+el único que no está habilitado horario
+
+una vez seleccionada la fecha de ejecuta una consulta que trae los horarios disponibles para esa fecha. Es decir, de los horarios de la tabla horarios los cuales no existen en
+la tabla reservas para ese horario y para esa fecha... es decir solo debe mostrar horarios disponibles
+ 
+Mas abajo de muestra la sección de datos del cliente. Esta sección 
+muestra:dni,
+	nombre,
+	fec_nacimiento,
+	email,
+	telefono,
+	direccion
+funciona así:
+al principio el único que no es disabled es el dni, se introduce dni al hacer tab se busca si existe un cliente con ese dni
+si existe trae sus datos y rellena los campos. Sino se guarda la info para luego insertar (cuando se graba y se paga la reserva )
+
+si se cambia la fecha solo se reseta el horario (este depende de la fecha)
+
+Al final se ve el boton continuar
+
+Al hacer click al boton continuar, se abre un modal pero solo si se tiene todos los campos requeridos para la res.  En este momento:
+	se crea una reserva de "prueba" con los mismos datos de la res y demas pero con el estado "Pendiente" (de pago)
+	se inserta el cliente si no existe, controlado con una variable
+
+En este modal que se abre, se muestra un resumen de la reseva a realizar y el total a pagar. 
+Mas abajo, modulo de pago o boton de pagar, hay que ver como lo resuelvo
+si el pago es correcto, se cambia el estado de la reserva efectivamente a "Confirmado". Se actualiza la reserva nueva si es necesario.
+
+se cierra el modal y se da como finalizado el proceso. se limpia todo el formulario refrescando la pagina o reseteando las variables.
