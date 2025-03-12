@@ -15,18 +15,21 @@ CREATE TABLE esquema1.usuarios (
 	CONSTRAINT fk_rol FOREIGN KEY (rol_id) REFERENCES esquema1.roles(id)
 );
 
-tabla clientes:
-CREATE TABLE esquema1.clientes (
-	id serial NOT NULL,
-	nombre varchar(100) NOT NULL,
-	email varchar(100) NOT NULL,
-	edad int4 NULL,
-	telefono varchar(15) NULL,
-	direccion varchar(30) NULL,
-	inhabilitado int4 NULL,
-	creado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-	actualizado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-	CONSTRAINT clientes_pkey PRIMARY KEY (id)
+tabla combos:
+CREATE TABLE esquema1.combos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    cant_max_personas INTEGER NOT NULL,
+    precio_base DECIMAL(10, 2) NOT NULL,
+    precio_adicional_persona DECIMAL(10, 2),
+    inhabilitada BOOLEAN,
+    servicio BOOLEAN,
+    invitacion BOOLEAN,
+    bebidas BOOLEAN,
+    observacion VARCHAR(30),
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 tabla dias:
@@ -41,26 +44,11 @@ CREATE TABLE esquema1.combo_dias (
     combo_id INTEGER REFERENCES esquema1.combos(id),
     dia_id INTEGER REFERENCES esquema1.dias(id)
 );
-
-tabla horarios:
-CREATE TABLE esquema1.horarios (
+CREATE TABLE esquema1.combo_precios (
     id SERIAL PRIMARY KEY,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL
-);
-
-tabla comidas:
-CREATE TABLE esquema1.comidas (
-    id SERIAL PRIMARY KEY,
-    nombre varchar(50),
-    descripcion varchar(50)
-);
-
-tabla combo_comidas:
-CREATE TABLE esquema1.combo_comidas (
-    id SERIAL PRIMARY KEY,
-    combo_id INTEGER REFERENCES esquema1.combos(id),
-    comida_id INTEGER REFERENCES esquema1.comida(id)
+    combo_id INTEGER NOT NULL REFERENCES esquema1.combos(id),
+    dia_id INTEGER NOT NULL REFERENCES esquema1.dias(id),
+    precio DECIMAL(10, 2) NOT NULL
 );
 
 tabla bebidas:
@@ -79,11 +67,18 @@ CREATE TABLE esquema1.combo_comidas (
 );
 
 
-tabla menu:
+tabla menus:
 CREATE TABLE esquema1.menus (
     id SERIAL PRIMARY KEY,
     descripcion varchar(30),
     inhabilitado INTEGER default null
+);
+
+tabla comidas:
+CREATE TABLE esquema1.comidas (
+    id SERIAL PRIMARY KEY,
+    nombre varchar(50),
+    descripcion varchar(50)
 );
 
 tabla menu_comidas, une menus y comidas
@@ -93,12 +88,72 @@ CREATE TABLE esquema1.menu_comidas (
     comida_id INTEGER REFERENCES esquema1.comidas(id)
 );
 
-tabla combo_menus_comidas, une 1 combo y los menus que tenga:
+tabla combo_menus, une 1 combo y los menus que tenga:
 CREATE TABLE esquema1.combo_menus_comidas (
     id SERIAL PRIMARY KEY,
-    combo_id INTEGER REFERECES esquema1.combos(id),
-    menu_comidas_id INTEGER REFERENCES esquema1.menu_comidas(id)
+    combo_id INTEGER REFERENCES esquema1.combos(id),
+    menu_id INTEGER REFERENCES esquema1.menus(id)
 );
+
+tabla instalaciones:
+CREATE TABLE esquema1.instalaciones(
+    id SERIAL PRIMARY KEY,
+    nombre varchar(50),
+    descripcion varchar(50),
+    edad_uso INTEGER,
+    inhabilitado INTEGER default null
+);
+
+tabla combo_instalaciones:
+CREATE TABLE esquema1.combo_instalaciones (
+    id SERIAL PRIMARY KEY,
+    combo_id INTEGER REFERENCES esquema1.combos(id),
+    instalacion_id INTEGER REFERENCES esquema1.instalaciones(id)
+);
+
+tabla horarios:
+CREATE TABLE esquema1.horarios (
+    id SERIAL PRIMARY KEY,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL
+);
+
+tabla estados:
+CREATE TABLE esquema1.estados (
+    id SERIAL PRIMARY KEY,
+    nombre varchar(30),
+    inhabilitado INTEGER default null
+);
+
+tabla clientes:
+CREATE TABLE esquema1.clientes (
+	id serial NOT NULL PRIMARY KEY,
+	nombre varchar(100) NOT NULL,
+        fecha_nacimiento DATE,
+	email varchar(100) NOT NULL,
+	edad integer,
+	telefono varchar(15),
+	direccion varchar(30) NULL,
+	inhabilitado int4 NULL,
+	creado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	actualizado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL
+);
+
+tabla de reservas:
+CREATE TABLE esquema1.reservas (
+    id SERIAL PRIMARY KEY,
+    fecha_grabacion DATE NOT NULL,
+    fecha_evento DATE NOT NULL,
+    cliente_id INTEGER REFERENCES esquema1.clientes(id),
+    estado_id INTEGER REFERENCES esquema1.estados(id),
+    horario_id INTEGER REFERENCES esquema1.horarios(id),
+    cantidad_invitados INTEGER NOT NULL,
+    combo_id INTEGER REFERENCES esquema1.combos(id),
+    inhabilitada INTEGER DEFAULT null,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -----------------------------------------------------------------------------------------
 CREATE TABLE combos (
     id SERIAL PRIMARY KEY,
@@ -127,14 +182,12 @@ CREATE TABLE esquema1.combos (
     descripcion TEXT,
     cantidad_personas INTEGER NOT NULL,
     precio_base DECIMAL(10, 2) NOT NULL,
-    capacidad_personas INT NOT NULL,
     precio_adicional_persona DECIMAL(10, 2),
     inhabilitada INTEGER DEFAULT null,
     servicio INTEGER, -- 1 o NULL dependiendo si cuenta con servicio de mozos
     invitacion INTEGER, -- 1 o NULL dependiendo si cuenta con invitacion virtual
-    bebidas INTEGER, -- 1O NULL dependiendo si cuenta con bebidas, tabla combo_bebidas
-    observacio TEXT,
-    combos_menu_comida_id INTEGER REFERENCES esquema1.combo_menus_comidas(id)
+    bebidas INTEGER, -- 1 o NULL dependiendo si cuenta con bebidas, tabla combo_bebidas
+    observacion TEXT,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

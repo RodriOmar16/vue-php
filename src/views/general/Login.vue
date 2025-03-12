@@ -4,7 +4,7 @@
       <v-row class="container-full-login" no-gutters>
         <v-col cols="12" sm="5" md="5" class="d-flex justify-center container-color-login py-0 px-4">
           <v-form @submit.prevent="hacerLogin()" class="d-flex justify-center ma-auto">
-            <v-card :max-width="xs? 350 : 350">
+            <v-card :max-width="xs? 350 : 350" class="pa-2 rounded-lg">
               <v-card-text>
                 <v-row>
                   <v-col cols="12" class="py-1">
@@ -74,13 +74,13 @@
                     </v-btn>
                   </v-col>
                 </v-row>
-                <v-row clas="">
+                <!--<v-row clas="">
                   <v-col cols="12" class="d-flex justify-center py-1">
                     <div class="subtitle-2 text-orange" @click="controlarRegistro()">
                       {{ registrar ? 'Iniciar sesión' : '¿Eres nuevo? Registrate aquí' }}
                     </div>
                   </v-col>
-                </v-row>
+                </v-row>-->
               </v-card-text>
             </v-card>
           </v-form>

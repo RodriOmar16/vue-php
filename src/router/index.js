@@ -5,11 +5,25 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      redirect: (to) => {
-        const token = localStorage.getItem('token');
-        return token ? '/home' : 'login';
-      }
+      path: '/home',
+      name: 'Inicio',
+      component: () => import('../views/general/Inicio.vue'),
+    },
+    {
+      path: '/reservas',
+      name: 'Reservas',
+      component: () => import('../views/reservas/Reservas.vue'),
+    },
+    {
+      path: '/combos',
+      name: 'Combos',
+      component: () => import('../views/combos/Combos.vue'),
+    },
+    {
+      path: '/gestionar-usuarios',
+      name: 'Dashboard',
+      component: () => import('../views/usuarios/Usuarios.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/login',
@@ -17,14 +31,9 @@ const router = createRouter({
       component: () => import('../views/general/Login.vue'),
     },
     {
-      path: '/home',
-      name: 'Inicio',
-      component: () => import('../views/general/Inicio.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/:pathMatch(.*)*',
-      redirect: '/login'
+      name: 'NotFound',
+      component: () => import('../views/general/NotFound.vue')
     }
   ],
 })
@@ -35,8 +44,6 @@ router.beforeEach((to, from, next) => {
   authStore.isAuthenticated = token ? true : false;
   if(to.meta.requiresAuth && !token){
     next({ name: 'Login' });
-  }else if(!to.meta.requiresAuth && token && to.name === 'Login'){
-    next({ name: 'Inicio' });
   }else{
     next();
   }
