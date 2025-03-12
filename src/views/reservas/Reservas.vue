@@ -1,5 +1,5 @@
 <template>
-  HOLA HAS TUS RESERVAS AQUÍ
+  <div style="margin-top: 70px;">HOLA HAS TUS RESERVAS AQUÍ</div>
 </template>
 
 <script setup>

@@ -1,5 +1,5 @@
 <template>
-  HOLA HAS TUS combos AQUÍ
+  <div style="margin-top: 70px;">HOLA HAS TUS combos AQUÍ</div>
 </template>
 
 <script setup>

@@ -1,0 +1,46 @@
+Esquema de la Vista de reservas:
+
+Clientes
+Filtros:
+	Fecha_tentativa
+	Horario
+	combo_habilitados
+ -> fecha obligatorio en la busqueda y estado Disponible, 
+	filtra reservas disp con combos, 
+	horarios disponibles para ese dia
+    se muestra todo en un v-data-table o lista (a definir)
+
+Reservar (accion desde la row, se abre modal para reservar si el estado es disponible):
+	Rellenar datos del cliente (nuevo cliente):
+		Comenzar todos los campos disabled menos dni, se busca el dni si ya existe simplemente rellenar los campos
+		sino se llenan por primera vez y se da del alta al cliente
+	se pasa Fecha_tentativa (siempre disabled, filled y readonly), horario y el combo seleccionado. Será posible cambiar el horario(por horarios disponibles) y el combo pero no la fecha
+	se exige agrega la cantidad de invitados
+	al lado del autocomplete de combos, icono de eye que diga con tooltip para ir a ver los combos con mas detalles
+	al dar guardar:
+		mostrando los detalles, resumen de la operacion al dar confirmar 
+		abrir pasarela de pago o algo que hago el debito de la cuenta, pasar el estado a pendiente(de pago)
+		impactar todos estos datos en la base de datos
+	cambiar de estado a confirmada
+
+Admin
+Filtros:
+	Fecha_desde, Fecha_hasta, habilitadas, estados_reserva,
+	combos_habilitados, horarios, cantidad_personas, Cliente_nombre, dni_cliente
+  -> deben mostrarse todos los detalles de las reservas que traiga de los filtros. 
+	Acciones: ver, 
+		  editar: permitir editar la cantidad de invitados
+			  el horario, solo si está disponible
+			  combo elegido.
+			  Datos del cliente, que luego hacen update en la tabla	
+			  ver que hacer con el tema de los pagos, quizas solo si se editar aceptar diferencias con lo pagado
+		  cancelar: que este en un estado distinto de cancelada y disponible 
+Reservar:
+	para crear una reserva
+		Llenar los datos del cliente casi de la misma manera, si ya existe no se crea uno nuevo se rellena la info.
+		seleccionar fecha, luego horarios disponibles de la fecha
+		seleccionar tipo de combo, ojito de ver combo (vista previa del combo, componente)
+		cantidad de invitados
+		grabar res y cliente
+		pagar, pasada a estado pendiente
+		cambia estado a confirmada	
