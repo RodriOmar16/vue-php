@@ -1,71 +1,83 @@
 hice varios cambios:
 tabla usuarios queda así: 
 CREATE TABLE esquema1.usuarios (
-	id serial NOT NULL,
+	id serial4 NOT NULL,
 	nombre varchar(100) NOT NULL,
 	email varchar(150) NOT NULL,
-	"password" text NOT NULL,
+	"password" varchar(255) NOT NULL,
 	creado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	username varchar(30) NULL,
-	inhabilitado int4 NULL,
+	inhabilitado bool NULL,
 	rol_id int4 NOT NULL,
 	actualizado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	CONSTRAINT usuarios_email_key UNIQUE (email),
 	CONSTRAINT usuarios_pkey PRIMARY KEY (id),
 	CONSTRAINT fk_rol FOREIGN KEY (rol_id) REFERENCES esquema1.roles(id)
 );
+CREATE INDEX idx_usuarios_email ON esquema1.usuarios USING btree (email);
 
 tabla combos:
 CREATE TABLE esquema1.combos (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT,
-    cant_max_personas INTEGER NOT NULL,
-    precio_base DECIMAL(10, 2) NOT NULL,
-    precio_adicional_persona DECIMAL(10, 2),
-    inhabilitada BOOLEAN,
-    servicio BOOLEAN,
-    invitacion BOOLEAN,
-    bebidas BOOLEAN,
-    observacion VARCHAR(30),
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	id serial4 NOT NULL,
+	nombre varchar(100) NOT NULL,
+	descripcion text NULL,
+	cant_max_personas int4 NOT NULL,
+	precio_base numeric(10, 2) NOT NULL,
+	precio_adicional_persona numeric(10, 2) NULL,
+	inhabilitada bool NULL,
+	servicio bool NULL,
+	invitacion bool NULL,
+	bebidas bool NULL,
+	observacion varchar(30) NULL,
+	creado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	actualizado_en timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT combos_pkey PRIMARY KEY (id)
 );
 
 tabla dias:
-CREATE TABLE esquema1.dias{
-	id serial not null primary key,
-	nombre varchar(15)
-};
+CREATE TABLE esquema1.dias (
+	id serial4 NOT NULL,
+	nombre public.dias_enum NOT NULL,
+	CONSTRAINT dias_pkey PRIMARY KEY (id)
+);
 
 tabla combo_dias:
 CREATE TABLE esquema1.combo_dias (
-    id SERIAL PRIMARY KEY,
-    combo_id INTEGER REFERENCES esquema1.combos(id),
-    dia_id INTEGER REFERENCES esquema1.dias(id)
+	id serial4 NOT NULL,
+	combo_id int4 NULL,
+	dia_id int4 NULL,
+	CONSTRAINT combo_dias_pkey PRIMARY KEY (id),
+	CONSTRAINT combo_dias_combo_id_fkey FOREIGN KEY (combo_id) REFERENCES esquema1.combos(id),
+	CONSTRAINT combo_dias_dia_id_fkey FOREIGN KEY (dia_id) REFERENCES esquema1.dias(id)
 );
 CREATE TABLE esquema1.combo_precios (
-    id SERIAL PRIMARY KEY,
-    combo_id INTEGER NOT NULL REFERENCES esquema1.combos(id),
-    dia_id INTEGER NOT NULL REFERENCES esquema1.dias(id),
-    precio DECIMAL(10, 2) NOT NULL
+	id serial4 NOT NULL,
+	combo_id int4 NOT NULL,
+	dia_id int4 NOT NULL,
+	precio numeric(10, 2) NOT NULL,
+	CONSTRAINT combo_precios_pkey PRIMARY KEY (id),
+	CONSTRAINT combo_precios_combo_id_fkey FOREIGN KEY (combo_id) REFERENCES esquema1.combos(id),
+	CONSTRAINT combo_precios_dia_id_fkey FOREIGN KEY (dia_id) REFERENCES esquema1.dias(id)
 );
 
 tabla bebidas:
 CREATE TABLE esquema1.bebidas (
-    id SERIAL PRIMARY KEY,
-    nombre varchar(50),
-    litros decimal(5,2),
-    inhabilitada INTEGER default NULL
+	id serial4 NOT NULL,
+	nombre varchar(50) NULL,
+	litros numeric(5, 2) NULL,
+	inhabilitada int4 NULL,
+	CONSTRAINT bebidas_pkey PRIMARY KEY (id)
 );
 
 tabla combo_bebidas:
-CREATE TABLE esquema1.combo_comidas (
-    id SERIAL PRIMARY KEY,
-    combo_id INTEGER REFERENCES esquema1.combos(id),
-    bebida_id INTEGER REFERENCES esquema1.bebidas(id)
+CREATE TABLE esquema1.combo_bebidas (
+	id int4 DEFAULT nextval('esquema1.combo_comidas_id_seq'::regclass) NOT NULL,
+	combo_id int4 NULL,
+	bebida_id int4 NULL,
+	CONSTRAINT combo_comidas_pkey PRIMARY KEY (id),
+	CONSTRAINT combo_comidas_bebida_id_fkey FOREIGN KEY (bebida_id) REFERENCES esquema1.bebidas(id),
+	CONSTRAINT combo_comidas_combo_id_fkey FOREIGN KEY (combo_id) REFERENCES esquema1.combos(id)
 );
-
 
 tabla menus:
 CREATE TABLE esquema1.menus (

@@ -47,18 +47,25 @@ Reservar:
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------
-reservar cliente explicacion de como ser usa
-al abrir el formulario de reservas se ejecuta la consulta que trae los combos armados para los cliente (combos habilitados)
-incialmente se muestras 3 campos:
+Si el usuario que quiere entrar al link /reservas està loggeado entonces es usuario, entonces puede ver la vista del abm de reservas y gestionarlas
+sino al darle click al botòn reservas se redirige a /nueva-reserva y el cliente solo verà el formulario de nueva res.
+
+/nueva-reserva, un cliente entra al formulario:
+al abrir el formulario de reservas se ejecuta las consultas que:
+	trae los combos armados para los cliente (combos habilitados)
+	traen permisos para el usuario loggeado (si no està autenticado entonces tampoco es usuario por lo tanto no hay permisos)
+Si se tiene permisos hay un switch de editar ya que sino tambièn solo se puede ver
+incialmente se muestras 4 campos:
 	Fecha
 	Horarios
 	Combos habilitado
+	cantidad_invitados
 el único que no está habilitado horario
 
 una vez seleccionada la fecha de ejecuta una consulta que trae los horarios disponibles para esa fecha. Es decir, de los horarios de la tabla horarios los cuales no existen en
-la tabla reservas para ese horario y para esa fecha... es decir solo debe mostrar horarios disponibles
+la tabla reservas para ese horario, para esa fecha y con estado Confirmada o Pendiente... es decir solo debe mostrar horarios disponibles
  
-Mas abajo de muestra la sección de datos del cliente. Esta sección 
+Mas abajo, se muestra la sección de datos del cliente. Esta sección 
 muestra:dni,
 	nombre,
 	fec_nacimiento,
@@ -82,3 +89,17 @@ Mas abajo, modulo de pago o boton de pagar, hay que ver como lo resuelvo
 si el pago es correcto, se cambia el estado de la reserva efectivamente a "Confirmado". Se actualiza la reserva nueva si es necesario.
 
 se cierra el modal y se da como finalizado el proceso. se limpia todo el formulario refrescando la pagina o reseteando las variables.
+
+Si estas loggeado y se le da al link de reservas se ve efectivamente el index de reservas
+con los siguientes filtros para buscar:
+	Fecha_desde, Fecha_hasta, habilitadas, estados_reserva,
+	combos_habilitados, horarios, cantidad_personas, Cliente_nombre, dni_cliente
+se le da a buscar, trae las que cumplan con eso y las lista en una tabla
+cada tabla tiene acciones ver/editar, cancelar_res
+en la esquina superior derecha se verá el boton de + que abrirá una nueva pestaña /nueva-reserva y de ahí es lo mismo que para el cliente
+si se da a editar, redirige a /reserva/:id.
+como el usuario es autenticado muestra el switch para editar, dejará editar 
+	el día pero los horarios se resetean (pues horario depende del dia), 
+	el dni haciendo el mismo proceso descrito, no importa si ya creo al anterior cliente
+se calcula la diferencia entre el primer total de la reserva y las nuevas cosas que agregó o quitó (como gente), cambios de combos, etc...
+si la diferencia es mayor a 0 dejará que se haga el pago sino guarda, hace los update en base y listo.

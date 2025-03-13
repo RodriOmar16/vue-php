@@ -20,6 +20,16 @@ const router = createRouter({
       component: () => import('../views/reservas/Reservas.vue'),
     },
     {
+      path: '/nueva-reserva',
+      name: 'Nueva Reserva',
+      component: () => import('../views/reservas/UnaReserva.vue'),
+    },
+    {
+      path: '/reserva/:id',
+      name: 'Detalles de Reserva',
+      component: () => import('../views/reservas/UnaReserva.vue'),
+    },
+    {
       path: '/combos',
       name: 'Combos',
       component: () => import('../views/combos/Combos.vue'),
