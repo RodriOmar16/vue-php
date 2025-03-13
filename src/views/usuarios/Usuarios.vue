@@ -88,7 +88,7 @@ import {
   crearUsuario,
   editarUsuario,
   eliminarUsuario,
-} from '@/services/usuarios';
+} from '@/services/usuariosService';
 
 // Datos reactivos
 const usuarios = ref([]);
