@@ -1,6 +1,6 @@
 <template>
   <div style="margin-top: 70px;">
-    Hola mundo 
+    Hola mundo Una Reserva
     <br>
     {{ router.currentRoute.path }}
   </div>

@@ -18,6 +18,7 @@ const router = createRouter({
       path: '/reservas',
       name: 'Reservas',
       component: () => import('../views/reservas/Reservas.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/nueva-reserva',
@@ -58,6 +59,9 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
   authStore.isAuthenticated = token ? true : false;
   if(to.meta.requiresAuth && !token){
+    if(to.name == 'Reservas'){
+      return next({ name: 'Nueva Reserva' });
+    }
     next({ name: 'Login' });
   }else{
     next();
