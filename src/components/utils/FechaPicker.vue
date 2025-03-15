@@ -7,24 +7,24 @@
     max-width="290px"
     min-width="290px"
   >
-    <template v-slot:activator="{ on, attrs }">
+    <template v-slot:activator="{ props }">
       <div class="d-flex">
         <v-text-field
           class="mt-2"
           v-model="fecha"
           hide-details
           variant="outlined"
-          dense
+          density='comfortable'
           readonly
           clearable
         ></v-text-field>
         <v-btn
           class="mt-1"
           color="primary"
-          v-bind="attrs"
-          v-on="on"
+          v-bind="props"
           title="Seleccionar Fecha"
           icon
+          variant="text"
         >
           <v-icon>fa-solid fa-calendar-days</v-icon>
         </v-btn>
@@ -33,7 +33,7 @@
 
     <v-date-picker 
       v-model="date"
-      @update:model-value="menu = false"
+      @update:modelValue="menu = false"
       @change="formatearFecha"
       :hide-header="true"
       bg-color="white"

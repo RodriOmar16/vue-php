@@ -7,15 +7,15 @@
         </v-card-title>
         <v-card-text class="mx-4">
           <v-row>
-            Fecha_desde, Fecha_hasta, habilitadas, estados_reserva,
-	          combos_habilitados, horarios, cantidad_personas, Cliente_nombre, dni_cliente
-            <v-col cols="12" md="3">
+            <!--Fecha_desde, Fecha_hasta, habilitadas, estados_reserva,
+	          combos_habilitados, horarios, cantidad_personas, Cliente_nombre, dni_cliente-->
+            <v-col cols="12" sm="4" md="2">
               Fecha Desde
               <FechaPicker
                 v-model="fecha_desde"
               />
             </v-col>
-            <v-col cols="12" md="3">
+            <v-col cols="12" sm="4" md="3">
               Fecha Hasta
               <FechaPicker
                 v-model="fecha_hasta"
