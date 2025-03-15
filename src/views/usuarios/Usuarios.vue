@@ -25,7 +25,7 @@
           dense
         >
           <template #item.acciones="{ item }">
-            <v-btn icon color="info" @click="editarUsuario(item)">
+            <v-btn icon color="info" @click="editar(item)">
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
             <v-btn icon color="error" @click="eliminarUsuario(item.id)">
@@ -127,7 +127,7 @@ const abrirDialogoCrear = () => {
   dialogo.value = true;
 };
 
-const editarUsuario = (usuario) => {
+const editar = (usuario) => {
   modoEditar.value = true;
   formulario.value = { ...usuario }; // Clonar los datos del usuario
   formulario.value.contrasena = ''; // No mostrar la contraseña actual

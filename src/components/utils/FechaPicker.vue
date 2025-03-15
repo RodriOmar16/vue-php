@@ -13,10 +13,9 @@
           class="mt-2"
           v-model="fecha"
           hide-details
-          outlined
+          variant="outlined"
           dense
           readonly
-          filled
           clearable
         ></v-text-field>
         <v-btn
