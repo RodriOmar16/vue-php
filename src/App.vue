@@ -4,11 +4,11 @@
     <Navigation/>
     <!-- Resto del contenido -->
     <v-main>
-      <Loading :loading="genericosStore.loading" />
+      <Loading :loading="useGenericos.loading" />
       <SnackBar 
-        v-model="genericosStore.activarSnack"
-        :mensaje="genericosStore.textoSnack"
-        :color="genericosStore.colorSnack"
+        v-model="useGenericos.activarSnack"
+        :mensaje="useGenericos.textoSnack"
+        :color="useGenericos.colorSnack"
       />
       <RouterView />
     </v-main>
@@ -17,12 +17,12 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
-import { genericos } from './store/genericos';
+import { genericosStore } from './store/genericos';
 import Loading from './components/utils/Loading.vue';
 import SnackBar from './components/utils/SnackBar.vue';
 import Navigation from './components/generales/Navigation.vue';
 
-const genericosStore = genericos();
+const useGenericos = genericosStore();
 
 </script>
 

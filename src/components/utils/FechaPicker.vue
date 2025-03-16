@@ -10,16 +10,18 @@
     <template v-slot:activator="{ props }">
       <div class="d-flex">
         <v-text-field
-          class="mt-2"
+          class=""
           v-model="fecha"
-          hide-details
+          :hide-details="hideDetails"
           variant="outlined"
           density='comfortable'
-          clearable
+          :clearable="!readOnly"
           placeholder="DD/MM/YYYY"
           @change="aplicarFormato()"
           @input="aplicarMask()"
           maxlength="10"
+          :disabled="disabled"
+          :readonly="readOnly"
         ></v-text-field>
         <v-btn
           class="mt-1"
@@ -28,6 +30,8 @@
           title="Seleccionar Fecha"
           icon
           variant="text"
+          :disabled="disabled"
+          :readonly="readOnly"
         >
           <v-icon>fa-solid fa-calendar-days</v-icon>
         </v-btn>
@@ -41,18 +45,23 @@
       @update:model-value="formatearFecha()"
     ></v-date-picker>
   </v-menu>
-  {{ fecha }}
-  ----
-  {{ date }}
 </template>
 
 <script setup>
+  /*
+    Este componente requiere que desde el padre se envie un formato "DD/MM/YYYY" como String
+    lo procesa como Date para que el v-date-picker lo entienda y lo emit como una String en el mismo formato 
+    "DD/MM/YYYY", pero con la fecha seleccionada.
+  */
   import { ref, computed, watch, onMounted } from "vue";
   import moment from "moment";
 
   // Props y eventos
   const props = defineProps({
-    modelValue: String//Date
+    modelValue: String,
+    disabled: { type: Boolean, default: false },
+    readOnly: { type: Boolean, default: false },
+    hideDetails: { type: Boolean, default: true },
   });
   const emit = defineEmits(["update:modelValue"]);
 

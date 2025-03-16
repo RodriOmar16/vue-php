@@ -100,7 +100,7 @@
   import { useRouter, useRoute } from 'vue-router';
   import { useDisplay } from 'vuetify/lib/framework.mjs';
   import { useAuthStore } from '@/store/auth';
-  import { genericos } from '@/store/genericos';
+  import { genericosStore } from '@/store/genericos';
   import Logo from '@/components/generales/Logo.vue';
   
   //data
@@ -115,7 +115,7 @@
   const route          = useRoute();
   const auth           = useAuthStore();
   const { xs }         = useDisplay();
-  const genericosStore = genericos();
+  const useGenericos   = genericosStore();
   const errorEmail     = ref(false);
   const emailPattern   = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   
@@ -156,9 +156,9 @@
   const hacerLogin = async () => {
     let error = validarCampos();
     if(error && error.resultado == 0){
-      genericosStore.activarSnack = true;
-      genericosStore.textoSnack   = error.msj;
-      genericosStore.colorSnack   = 'info';
+      useGenericos.activarSnack = true;
+      useGenericos.textoSnack   = error.msj;
+      useGenericos.colorSnack   = 'info';
       return 
     }
     inicioSecion.value = true;
@@ -170,9 +170,9 @@
     }
     inicioSecion.value = false;
     if(res.resultado == 0){
-      genericosStore.activarSnack = true;
-      genericosStore.textoSnack   = res.msj;
-      genericosStore.colorSnack   = 'error';
+      useGenericos.activarSnack = true;
+      useGenericos.textoSnack   = res.msj;
+      useGenericos.colorSnack   = 'error';
       usuario.value  = '';
       email.value    = ''; 
       contras.value  = '';

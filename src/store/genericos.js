@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-export const genericos = defineStore("genericos", {
+export const genericosStore = defineStore("genericos", {
   state: () => {
     return {
       token: null,
@@ -30,6 +30,11 @@ export const genericos = defineStore("genericos", {
     setLoading(value) {
       this.loading = value;
     },
+    setSnackBar(text,color){
+      this.activarSnack = true;
+      this.textoSnack   = text;
+      this.colorSnack   = color;
+    }
   },
 });
 
