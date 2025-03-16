@@ -15,8 +15,11 @@
           hide-details
           variant="outlined"
           density='comfortable'
-          readonly
           clearable
+          placeholder="DD/MM/YYYY"
+          @change="aplicarFormato()"
+          @input="aplicarMask()"
+          maxlength="10"
         ></v-text-field>
         <v-btn
           class="mt-1"
@@ -33,12 +36,14 @@
 
     <v-date-picker 
       v-model="date"
-      @update:modelValue="menu = false"
-      @change="formatearFecha"
-      :hide-header="true"
+      hide-header
       bg-color="white"
+      @update:model-value="formatearFecha()"
     ></v-date-picker>
   </v-menu>
+  {{ fecha }}
+  ----
+  {{ date }}
 </template>
 
 <script setup>
@@ -47,13 +52,13 @@
 
   // Props y eventos
   const props = defineProps({
-    modelValue: String
+    modelValue: String//Date
   });
   const emit = defineEmits(["update:modelValue"]);
 
   // Variables reactivas
   const menu = ref(false);
-  const date = ref(moment(new Date()).format("YYYY-MM-DD"));
+  const date = ref(new Date());
 
   // Computed para manejar el binding con v-model
   const fecha = computed({
@@ -64,20 +69,44 @@
   // Métodos
   const aplicarFormato = () => {
     if (fecha.value) {
-      let fechaArr = fecha.value.split("/");
-      date.value = moment(new Date(fechaArr[2], fechaArr[1] - 1, fechaArr[0])).format("YYYY-MM-DD");
+      let fecha_date = new Date(fecha.value.split("/").reverse().join("-"));
+      fecha_date.setDate(fecha_date.getDate() + 1);
+      date.value = fecha_date // Convierte string a Date fecha.value
     } else {
-      fecha.value = moment(new Date()).format("DD/MM/YYYY");
+      date.value = new Date();
     }
   };
 
   const formatearFecha = () => {
+    menu.value = false
     if (!date.value) {
       fecha.value = null;
     } else {
-      let dateArr = date.value.split("-");
-      fecha.value = moment(new Date(dateArr[0], dateArr[1] - 1, dateArr[2])).format("DD/MM/YYYY");
+      fecha.value = moment(date.value).format("DD/MM/YYYY");
     }
+  };
+
+  const aplicarMask = () => {
+    let valor = event.target.value;
+
+    // Elimina cualquier carácter no numérico
+    valor = valor.replace(/\D/g, "");
+
+    // Inserta las barras según el formato "DD/MM/YYYY"
+    if (valor.length >= 3) {
+      valor = valor.slice(0, 2) + "/" + valor.slice(2);
+    }
+    if (valor.length >= 6) {
+      valor = valor.slice(0, 5) + "/" + valor.slice(5);
+    }
+
+    // Limita el input al formato "DD/MM/YYYY"
+    if (valor.length > 10) {
+      valor = valor.slice(0, 10);
+    }
+
+    // Actualiza el valor en el campo
+    fecha.value = valor;
   };
 
   // Hooks
@@ -86,16 +115,20 @@
   });
 
   // Watchers
-  watch(menu, (val) => {
-    if (val) aplicarFormato();
+  watch(fecha, (val) => {
+    if (!val){ date.value = new Date();}
   });
+  /*watch(menu, (val) => {
+    //if (val) aplicarFormato();
+    if (!val) formatearFecha();
+  });*/
 
-  watch(date, (val) => {
+  /*watch(date, (val) => {
     if (!val) {
       fecha.value = null;
     } else {
-      let dateArr = val.split("-");
-      fecha.value = moment(new Date(dateArr[0], dateArr[1] - 1, dateArr[2])).format("DD/MM/YYYY");
+      //fecha.value = moment(val).format("DD/MM/YYYY");
+      //fecha.value = new Date();
     }
-  });
+  });*/
 </script>

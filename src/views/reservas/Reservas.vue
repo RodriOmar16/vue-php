@@ -15,12 +15,12 @@
                 v-model="fecha_desde"
               />
             </v-col>
-            <v-col cols="12" sm="4" md="3">
+            <!--<v-col cols="12" sm="4" md="3">
               Fecha Hasta
               <FechaPicker
                 v-model="fecha_hasta"
               />
-            </v-col>
+            </v-col>-->
           </v-row>
         </v-card-text>
       </v-card>
@@ -48,7 +48,7 @@
   const { xs }         = useDisplay();
   const useReserva     = useReservaStore();
   const fecha_desde    = ref(moment(new Date()).format('DD/MM/YYYY'));
-  const fecha_hasta    = ref(moment(new Date()).format('DD/MM/YYYY'));
+  const fecha_hasta    = ref(/*moment(*/new Date()/*).format('DD/MM/YYYY')*/);
   const habilitada     = ref(null);
   const estados_codigo = ref(null);
   const combo_id       = ref(null);
