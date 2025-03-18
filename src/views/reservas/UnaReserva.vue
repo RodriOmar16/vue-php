@@ -14,7 +14,7 @@
             <v-col cols="12" sm="6" md="3" class="py-1">
               Fecha Desde
               <FechaPicker
-                v-model="fecha_desde" hideDetails
+                v-model="fecha_reserva" hideDetails
               />
             </v-col>
             <v-col cols="12" sm="6" md="3" class="py-1">
@@ -51,7 +51,7 @@
               Cant. Personas
               <v-text-field
                 class=""
-                v-model="cant_personas"
+                v-model="cant_invitados"
                 variant="outlined"
                 density='comfortable'
                 type="number"
@@ -76,7 +76,7 @@
               Dni Cliente
               <v-text-field
                 class=""
-                v-model="dni_cliente"
+                v-model="cliente_dni"
                 variant="outlined"
                 density='comfortable'
                 type="number"
@@ -199,7 +199,7 @@
   const validarNumero = (variable) => {
     let campo = '';
     switch(variable){
-      case 'reserva_id': 
+      /*case 'reserva_id': 
         if(reserva_id.value < 0){ 
           reserva_id.value = null; 
           campo = 'Cód. Reserva';
@@ -214,10 +214,10 @@
           useGenericos.setSnackBar('No se admiten valores negativos para el campo '+ campo , 'info');
           return;
         }
-      break;
+      break;*/
       case 'dni_cliente': 
-        if(dni_cliente.value < 0){ 
-          dni_cliente.value = null;  
+        if(cliente_dni.value < 0){ 
+          cliente_dni.value = null;  
           campo = 'Dni Cliente';
           useGenericos.setSnackBar('No se admiten valores negativos para el campo '+ campo , 'info');
           return;
