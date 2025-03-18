@@ -10,10 +10,10 @@
     
     <!-- Menú de opciones pantallas grandes-->
     <div v-if="!xs">
-      <RouterLink to="home"><v-btn text color="white">Inicio</v-btn></RouterLink>
-      <RouterLink to="reservas"><v-btn text color="white">Reservas</v-btn></RouterLink>
-      <RouterLink to="combos"><v-btn text color="white">Combos</v-btn></RouterLink>
-      <RouterLink to="gestionar-usuarios"><v-btn text color="white">Usuarios</v-btn></RouterLink>
+      <RouterLink to="/home"><v-btn text color="white">Inicio</v-btn></RouterLink>
+      <RouterLink to="/reservas"><v-btn text color="white">Reservas</v-btn></RouterLink>
+      <RouterLink to="/combos"><v-btn text color="white">Combos</v-btn></RouterLink>
+      <RouterLink to="/gestionar-usuarios"><v-btn text color="white">Usuarios</v-btn></RouterLink>
 
       <v-btn variant="plain" @click="logout()" v-if="authStore.isAuthenticated">
         <v-icon>fa-solid fa-arrow-right-from-bracket</v-icon>

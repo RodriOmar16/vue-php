@@ -1,9 +1,9 @@
 <template>
-  <v-app style="width: 100%;">
+  <v-app style="width: 100%">
     <!-- Nav bar -->
     <Navigation/>
     <!-- Resto del contenido -->
-    <v-main>
+    <v-main >
       <Loading :loading="useGenericos.loading" />
       <SnackBar 
         v-model="useGenericos.activarSnack"
@@ -27,5 +27,5 @@ const useGenericos = genericosStore();
 </script>
 
 <style scoped>
-/* Estilos adicionales */
+
 </style>

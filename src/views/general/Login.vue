@@ -51,7 +51,6 @@
                       variant='outlined'
                       density='comfortable'
                       :error="errorEmail"
-                      dense
                       clearable
                     ></v-text-field>
                   </v-col>

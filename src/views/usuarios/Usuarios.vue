@@ -90,6 +90,17 @@ import {
   eliminarUsuario,
 } from '@/services/usuariosService';
 
+  onMounted(async () => {
+    await init();
+  });
+
+  //Methods
+  const init = async () => {
+    useGenericos.loading = true;
+    //consultas a la api
+    useGenericos.loading = false;
+  };
+
 // Datos reactivos
 const usuarios = ref([]);
 const headers = [

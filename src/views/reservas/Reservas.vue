@@ -2,27 +2,28 @@
   <v-row class="pt-4" :class="xs? 'px-2' : 'px-4'">
     <v-col cols="12">
       <v-card>
-        <v-card-title>
-          Filtros
+        <v-card-title class="d-flex justify-space-between">
+          <div class="d-flex align-center"><span>Filtros</span></div>
+          <v-btn title="Nueva reserva" icon color="success" @click="crearEditarReserva(null)" size="small" class="mr-4">
+            <v-icon size="small">fa-solid fa-plus </v-icon>
+          </v-btn>
         </v-card-title>
-        <v-divider class="py-2"></v-divider>
-        <v-card-text class="mx-4 mb-2">
+        <v-divider class="my-2 mx-6"></v-divider>
+        <v-card-text class="mx-2 mb-2">
           <v-row>
-            <!--Fecha_desde, Fecha_hasta, habilitadas, estados_reserva,
-	          combos_habilitados, horarios, cantidad_personas, Cliente_nombre, dni_cliente-->
-            <v-col cols="12" sm="4" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Fecha Desde
               <FechaPicker
                 v-model="fecha_desde" hideDetails
               />
             </v-col>
-            <v-col cols="12" sm="4" md="3"  class="py-1">
+            <v-col cols="12" sm="6" md="3"  class="py-1">
               Fecha Hasta
               <FechaPicker
                 v-model="fecha_hasta"
               />
             </v-col>
-            <v-col cols="12" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Estados
               <v-autocomplete
                 v-model="estados_codigo"
@@ -37,7 +38,7 @@
                 no-data-text="No se encontraron datos"
               ></v-autocomplete>
             </v-col>
-            <v-col cols="12" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Combos
               <v-autocomplete
                 v-model="combo_id"
@@ -52,7 +53,7 @@
                 no-data-text="No se encontraron datos"
               ></v-autocomplete>
             </v-col>
-            <v-col cols="12" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Horarios
               <v-autocomplete
                 v-model="horario_id"
@@ -67,7 +68,7 @@
                 no-data-text="No se encontraron datos"
               ></v-autocomplete>
             </v-col>
-            <v-col cols="12" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Cód. Reserva
               <v-text-field
                 class=""
@@ -80,7 +81,7 @@
                 @change="validarNumero('reserva_id')"
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Cant. Personas
               <v-text-field
                 class=""
@@ -93,7 +94,7 @@
                 @change="validarNumero('cant_personas')"
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="3" class="py-1">
+            <v-col cols="12" sm="6" md="3" class="py-1">
               Dni Cliente
               <v-text-field
                 class=""
@@ -106,7 +107,7 @@
                 @change="validarNumero('dni_cliente')"
               ></v-text-field>
             </v-col>
-            <v-col cols="6" md="3" class="py-1">
+            <v-col cols="6" sm="6" md="3" class="py-1">
               Nombre Cliente
               <v-text-field
                 class=""
@@ -117,8 +118,11 @@
                 clearable
               ></v-text-field>
             </v-col>
-            <v-col cols="6" md="9" class="py=1 d-flex justify-end">
-              Buscar
+            <v-col cols="6" sm="3" md="3" class="py-1 d-flex align-center">
+              <v-switch label="Inhabilitadas" color="primary" v-model="habilitada" :true-value="1" :false-value="0" hide-details></v-switch>
+            </v-col>
+            <v-col cols="12" sm="3" md="6" class="py=1 d-flex justify-end align-center">
+              <BtnFiltro @limpiar="limpiar" @filtrar="buscar"/>
             </v-col>
           </v-row>
         </v-card-text>
@@ -129,8 +133,34 @@
         <v-card-title>
           Resultados
         </v-card-title>
+        <v-divider class="mt-0 mx-4"></v-divider>
         <v-card-text>
-          skjdnfkjsadn
+          <v-row>
+            <v-col cols="12">
+              <v-data-table
+                :headers="header"
+                :items="reservas"
+              >
+                <!-- Acciones -->
+                <template v-slot:[`item.acciones`]="{item}">
+                  <div class="d-flex justify-center">
+                    <v-btn variant="plain" @click="crearEditarReserva(item)" icon color="primary" size="small">
+                      <v-icon>fa-solid fa-eye</v-icon>
+                      <v-tooltip activator="parent" location="bottom"
+                      >Ver</v-tooltip>
+                    </v-btn>
+                    <v-btn variant="plain" @click="crearEditarReserva(item)" icon color="primary" size="small">
+                      <v-icon>fa-solid fa-eye</v-icon>
+                      <v-tooltip activator="parent" location="bottom"
+                      >Ver</v-tooltip>
+                    </v-btn>
+                  </div>
+                </template>
+                <!-- No hay datos -->
+                <template v-slot:no-data> <AlertDataTable class="py-2"/> </template>
+              </v-data-table>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
     </v-col>
@@ -138,19 +168,24 @@
 </template>
 
 <script setup>
+  import { useRouter, useRoute } from 'vue-router';
   import { onMounted, ref } from 'vue';
   import { useReservaStore } from '@/store/reservas';
   import { genericosStore } from '@/store/genericos';
   import { useDisplay } from 'vuetify/lib/framework.mjs';
   import FechaPicker from '@/components/utils/FechaPicker.vue';
+  import BtnFiltro from '@/components/utils/BtnFiltro.vue';
+  import AlertDataTable from '@/components/utils/AlertDataTable.vue'
   import moment from 'moment';
 
   const { xs }         = useDisplay();
   const useReserva     = useReservaStore();
   const useGenericos   = genericosStore();
+  const router         = useRouter();
+
   const fecha_desde    = ref(moment(new Date()).format('DD/MM/YYYY'));
   const fecha_hasta    = ref(moment(new Date()).format('DD/MM/YYYY'));
-  const habilitada     = ref(null);
+  const habilitada     = ref(0);
   const estados_codigo = ref(null);
   const combo_id       = ref(null);
   const horario_id     = ref(null);
@@ -159,9 +194,59 @@
   const cliente_codigo = ref(null);
   const cliente_nombre = ref(null);
   const dni_cliente    = ref(null);
+
   const estados        = ref([]);
   const combos         = ref([]);
   const horarios       = ref([]);
+  const reservas       = ref([
+    {
+      "id": 1,
+      "fecha_grabacion": "2025-03-01",
+      "fecha_evento": "2025-03-15",
+      "cliente_id": 5,
+      "estado_id": 2,
+      "horario_id": 3,
+      "cantidad_invitados": 50,
+      "combo_id": 1,
+      "inhabilitada": 0,
+      "creado_en": "2025-03-01T10:30:00",
+      "actualizado_en": "2025-03-10T14:45:00"
+    },
+    {
+      "id": 2,
+      "fecha_grabacion": "2025-03-02",
+      "fecha_evento": "2025-03-16",
+      "cliente_id": 8,
+      "estado_id": 1,
+      "horario_id": 2,
+      "cantidad_invitados": 20,
+      "combo_id": 3,
+      "inhabilitada": 0,
+      "creado_en": "2025-03-02T11:00:00",
+      "actualizado_en": "2025-03-08T12:30:00"
+    },
+    {
+      "id": 3,
+      "fecha_grabacion": "2025-03-05",
+      "fecha_evento": "2025-03-20",
+      "cliente_id": 10,
+      "estado_id": 3,
+      "horario_id": 5,
+      "cantidad_invitados": 30,
+      "combo_id": 2,
+      "inhabilitada": 1,
+      "creado_en": "2025-03-05T09:15:00",
+      "actualizado_en": "2025-03-06T16:45:00"
+    }
+  ]);
+  const header = ref([
+    { title: 'Fecha Evento', key: 'fecha_evento' },
+    { title: 'Cliente', key: 'cliente_nombre'},
+    { title: 'Estado', key: 'estado_nombre'},
+    { title: 'Horario', key: 'horario' },
+    { title: 'Combo', key: 'combo_id' },
+    { title: 'Acciones', key: 'acciones', align:'center' },
+  ])
 
   onMounted(async () => {
     await init();
@@ -174,7 +259,8 @@
     useGenericos.loading = false;
   };
 
-  const cambios = () => { console.log("se cambiop"); }
+  const cambios = () => { console.log("se cambiop"); };
+
   const validarNumero = (variable) => {
     let campo = '';
     switch(variable){
@@ -202,6 +288,33 @@
           return;
         }
       break;
+    }
+  };
+
+  const buscar = () => {
+    console.log("buscar..............")
+  };
+
+  const limpiar = () => {
+    fecha_desde.value    = moment(new Date()).format('DD/MM/YYYY');
+    fecha_hasta.value    = moment(new Date()).format('DD/MM/YYYY');
+    habilitada.value     = 0;
+    estados_codigo.value = null;
+    combo_id.value       = null;
+    horario_id.value     = null;
+    reserva_id.value     = null;
+    cant_personas.value  = null;
+    cliente_codigo.value = null;
+    cliente_nombre.value = null;
+    dni_cliente.value    = null;
+  };
+
+  const crearEditarReserva = (item) => {
+    if(!item){
+      console.log("Nueva res por crear.")
+      router.push({ path: '/nueva-reserva' });
+    }else{
+      router.push({ path: '/reserva/'+item.id });
     }
   };
 
