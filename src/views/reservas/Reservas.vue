@@ -3,7 +3,7 @@
     <v-col cols="12">
       <v-card>
         <v-card-title class="d-flex justify-space-between">
-          <div class="d-flex align-center"><span>Filtros</span></div>
+          <div class="d-flex align-center"><span class="text-h6 pb-1" style="font-weight: bold;">Filtros</span></div>
           <v-btn title="Nueva reserva" icon color="success" @click="crearEditarReserva(null)" size="small" class="mr-4">
             <v-icon size="small">fa-solid fa-plus </v-icon>
           </v-btn>
@@ -130,7 +130,7 @@
     </v-col>
     <v-col cols="12">
       <v-card>
-        <v-card-title>
+        <v-card-title class="text-h6 pb-1" style="font-weight: bold;" >
           Resultados
         </v-card-title>
         <v-divider class="mt-0 mx-4"></v-divider>
