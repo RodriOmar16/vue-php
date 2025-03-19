@@ -126,7 +126,14 @@
               <v-data-table
                 :headers="header"
                 :items="reservas"
+                :search="search"
               >
+                <!-- Top -->
+                 <template v-slot:top>
+                  <v-row class="d-flex justify-end">
+                    <v-col cols="12" sm="6" md="3" > <SearchDataTAble v-model="search"/></v-col>
+                  </v-row>
+                 </template>
                 <!-- Acciones -->
                 <template v-slot:[`item.acciones`]="{item}">
                   <div class="d-flex justify-center">
@@ -162,6 +169,7 @@
   import FechaPicker from '@/components/utils/FechaPicker.vue';
   import BtnFiltro from '@/components/utils/BtnFiltro.vue';
   import AlertDataTable from '@/components/utils/AlertDataTable.vue'
+  import SearchDataTAble from '@/components/utils/SearchDataTAble.vue'
   import moment from 'moment';
 
   const { xs }         = useDisplay();
