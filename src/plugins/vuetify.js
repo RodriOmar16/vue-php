@@ -6,6 +6,16 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 
 const vuetify = createVuetify({
+  defaults:{
+    VTextField: {
+      variant: 'outlined', // Opcional: Cambia la variante del campo
+      density: 'compact',  // Opcional: Ajusta la densidad
+    },
+    VAutocomplete: {
+      variant: 'outlined', // Opcional: Cambia la variante del campo
+      density: 'compact',  // Opcional: Ajusta la densidad
+    },
+  },
   components,
   directives,
   icons: {

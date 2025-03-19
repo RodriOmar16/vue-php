@@ -13,8 +13,6 @@
           class=""
           v-model="fecha"
           :hide-details="hideDetails"
-          variant="outlined"
-          density='comfortable'
           :clearable="!readOnly"
           placeholder="DD/MM/YYYY"
           @change="aplicarFormato()"
@@ -24,11 +22,12 @@
           :readonly="readOnly"
         ></v-text-field>
         <v-btn
-          class="mt-1"
+          class="mt-1 ml-1"
           color="primary"
           v-bind="props"
           title="Seleccionar Fecha"
           icon
+          density="compact"
           variant="text"
           :disabled="disabled"
           :readonly="readOnly"

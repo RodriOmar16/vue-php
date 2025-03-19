@@ -3,7 +3,7 @@
     <v-col cols="12">
       <v-card>
         <v-card-title class="d-flex justify-space-between">
-          <div class="d-flex align-center"><span class="text-h6 pb-1" style="font-weight: bold;">Filtros</span></div>
+          <div class="d-flex align-center"><span class="text-h5 pb-1" style="font-weight: bold;">Filtros</span></div>
           <v-btn title="Nueva reserva" icon color="success" @click="crearEditarReserva(null)" size="small" class="mr-4">
             <v-icon size="small">fa-solid fa-plus </v-icon>
           </v-btn>
@@ -31,8 +31,6 @@
                 item-title="nombre"
                 :items="estados"
                 hide-details
-                variant="outlined"
-                density="comfortable"
                 clearable
                 @update:model-value="cambios()"
                 no-data-text="No se encontraron datos"
@@ -46,8 +44,6 @@
                 item-title="nombre"
                 :items="combos"
                 hide-details
-                variant="outlined"
-                density="comfortable"
                 clearable
                 @update:model-value="cambios()"
                 no-data-text="No se encontraron datos"
@@ -61,8 +57,6 @@
                 item-title="nombre"
                 :items="horarios"
                 hide-details
-                variant="outlined"
-                density="comfortable"
                 clearable
                 @update:model-value="cambios()"
                 no-data-text="No se encontraron datos"
@@ -73,8 +67,6 @@
               <v-text-field
                 class=""
                 v-model="reserva_id"
-                variant="outlined"
-                density='comfortable'
                 type="number"
                 hide-details
                 clearable
@@ -86,8 +78,6 @@
               <v-text-field
                 class=""
                 v-model="cant_personas"
-                variant="outlined"
-                density='comfortable'
                 type="number"
                 hide-details
                 clearable
@@ -99,8 +89,6 @@
               <v-text-field
                 class=""
                 v-model="dni_cliente"
-                variant="outlined"
-                density='comfortable'
                 type="number"
                 hide-details
                 clearable
@@ -112,8 +100,6 @@
               <v-text-field
                 class=""
                 v-model="cliente_nombre"
-                variant="outlined"
-                density='comfortable'
                 hide-details
                 clearable
               ></v-text-field>
@@ -122,7 +108,7 @@
               <v-switch label="Inhabilitadas" color="primary" v-model="habilitada" :true-value="1" :false-value="0" hide-details></v-switch>
             </v-col>
             <v-col cols="12" sm="3" md="6" class="py=1 d-flex justify-end align-center">
-              <BtnFiltro @limpiar="limpiar" @filtrar="buscar"/>
+              <BtnFiltro @limpiar="limpiar" @filtrar="buscar()"/>
             </v-col>
           </v-row>
         </v-card-text>
@@ -130,7 +116,7 @@
     </v-col>
     <v-col cols="12">
       <v-card>
-        <v-card-title class="text-h6 pb-1" style="font-weight: bold;" >
+        <v-card-title class="text-h5 pb-1" style="font-weight: bold;" >
           Resultados
         </v-card-title>
         <v-divider class="mt-0 mx-4"></v-divider>
@@ -194,6 +180,7 @@
   const cliente_codigo = ref(null);
   const cliente_nombre = ref(null);
   const dni_cliente    = ref(null);
+  const search         = ref('');
 
   const estados        = ref([]);
   const combos         = ref([]);
@@ -292,6 +279,8 @@
   };
 
   const buscar = () => {
+    search.value   = '';
+    reservas.value = [];
     console.log("buscar..............")
   };
 

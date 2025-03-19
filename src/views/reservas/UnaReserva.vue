@@ -1,11 +1,12 @@
 <template>
   <v-row class="pt-4" :class="xs? 'px-2' : 'px-4'">
-    <v-col cols="12" class="d-flex justify-end py-0">
-      <v-switch class="pa-0 ma-0" label="Editar" color="primary" v-model="editar" :true-value="true" :false-value="false" hide-details></v-switch>
+    <v-col cols="12" class="d-flex align-center justify-space-between py-1 mx-2">
+      <div class="text-h5" style="font-weight: bold;">{{ nuevo ? 'Nueva Reserva' : 'Detalles de la Reserva N°: '+reserva_id }}</div>
+      <v-switch v-if="!nuevo" class="pa-0 ma-0" label="Editar" color="primary" v-model="editar" :true-value="true" :false-value="false" hide-details></v-switch>
     </v-col>
     <v-col cols="12" class="py-0">
       <v-card class="pt-1">
-        <v-card-title class="text-h6 pb-1" style="font-weight: bold;">
+        <v-card-title class="text-h6 pb-1">
           Datos de la Reserva
         </v-card-title>
         <v-divider class="py-1 mx-6"></v-divider>
@@ -25,8 +26,6 @@
                 item-title="nombre"
                 :items="horarios"
                 hide-details
-                variant="outlined"
-                density="comfortable"
                 clearable
                 @update:model-value="cambios()"
                 no-data-text="No se encontraron datos"
@@ -40,8 +39,6 @@
                 item-title="nombre"
                 :items="combos"
                 hide-details
-                variant="outlined"
-                density="comfortable"
                 clearable
                 @update:model-value="cambios()"
                 no-data-text="No se encontraron datos"
@@ -52,8 +49,6 @@
               <v-text-field
                 class=""
                 v-model="cant_invitados"
-                variant="outlined"
-                density='comfortable'
                 type="number"
                 hide-details
                 clearable
@@ -66,7 +61,7 @@
     </v-col>
     <v-col cols="12" class="py-1">
       <v-card class="pt-1">
-        <v-card-title class="text-h6 pb-1" style="font-weight: bold;" >
+        <v-card-title class="text-h6 pb-1">
           Datos del Cliente
         </v-card-title>
         <v-divider class="my-2 mx-6"></v-divider>
@@ -77,8 +72,6 @@
               <v-text-field
                 class=""
                 v-model="cliente_dni"
-                variant="outlined"
-                density='comfortable'
                 type="number"
                 hide-details
                 clearable
@@ -90,8 +83,6 @@
               <v-text-field
                 class=""
                 v-model="cliente_nombre"
-                variant="outlined"
-                density='comfortable'
                 hide-details
                 clearable
               ></v-text-field>
@@ -108,8 +99,6 @@
                 class=""
                 v-model="cliente_email"
                 hide-details
-                variant='outlined'
-                density='comfortable'
                 :error="errorEmail"
                 clearable
               ></v-text-field>
@@ -120,8 +109,6 @@
                 class=""
                 v-model="cliente_tel"
                 hide-details
-                variant='outlined'
-                density='comfortable'
                 clearable
               ></v-text-field>
             </v-col>
@@ -131,8 +118,6 @@
                 class=""
                 v-model="cliente_address"
                 hide-details
-                variant='outlined'
-                density='comfortable'
                 clearable
               ></v-text-field>
             </v-col>
@@ -140,9 +125,81 @@
         </v-card-text>
       </v-card>
     </v-col>
+    <v-col cols="12" class="pt-1">
+      <v-card>
+        <v-card-title class="text-h6 pb-1">
+          Resumen
+        </v-card-title>
+        <v-divider class="my-2 mx-6"></v-divider>
+        <v-card-text class="mx-2 mb-2">
+          <v-row class="">
+            <v-col cols="12" sm="10" md="8" class="ma-auto">
+              <v-table class="elevation-2" v-if="!xs">
+                <template v-slot:default>
+                  <thead class="bg-grey-lighten-1">
+                    <tr>
+                      <th class="text-left text-subtitle-1">
+                        Concepto
+                      </th>
+                      <th class="text-right text-subtitle-1">
+                        Detalle
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-left">Cliente</td>
+                      <td class="text-right">{{ '41232518 - Rodrigo Omar Miranda' }}</td>
+                      <!--<td class="text-right">{{ format_money(alquiler) }}</td>-->
+                    </tr>
+                    <tr>
+                      <td class="text-left" >Fecha reservada</td>
+                      <td class="text-right">21/03/2025</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Horario</td>
+                      <td class="text-right">16:00 a 20:00</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Combo</td>
+                      <td class="text-right">Super 1</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Precio del Combo</td>
+                      <td class="text-right">$350.000,00</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Cant. Personas del Combo</td>
+                      <td class="text-right">50</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Cant. de Invitados</td>
+                      <td class="text-right">49</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Cant. Adicional de Personas</td>
+                      <td class="text-right">0</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Adicional por persona</td>
+                      <td class="text-right">$5.000,00</td>
+                    </tr>
+                    <tr style="font-weight: bold;">
+                      <td class="text-left">Total</td>
+                      <td class="text-right">$350.000,00</td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-table>
+              <div v-else> Proximamente</div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-col>
     <v-col cols="12" class="d-flex" :class="xs ? 'justify-center' : 'justify-end'"> 
       <v-btn color="secondary" class="mr-2">{{ editar ? 'Cancelar' : 'Volver' }}</v-btn> 
-      <v-btn color="success">Continuar</v-btn> 
+      <v-btn color="success">{{ nuevo ? 'Grabar' : 'guardar' }}</v-btn> 
     </v-col>
   </v-row>
 </template>
@@ -156,7 +213,7 @@
   
   const router       = useRouter(); //console.log(router.currentRoute.value.path, router.currentRoute.value.params)
   const useGenericos = genericosStore();
-  const { xs }       = useDisplay();
+  const { xs, sm }       = useDisplay();
   
   const editar        = ref(false);
   const nuevo         = ref(false);
