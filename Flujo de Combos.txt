@@ -1,0 +1,9 @@
+Index:
+apenas carga el formulario, se ejecuta una peticion que trae todos combos del sistema y los guarda en un array, guardar en local storage si es la primera vez
+se muestras en pantalla el primer combo...
+quisiera mostrar lo que es una card con los detalles del combo con botones para cambiar de combo o volver al anterior.
+en forma de listas pequeñas con items o en expansions panel detallar cada aspecto y hasta el boton de nuevo combo
+
+Nuevo combo:
+card o seccion con los datos básicos del combo
+card como seccion de 

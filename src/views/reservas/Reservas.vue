@@ -169,7 +169,7 @@
   import FechaPicker from '@/components/utils/FechaPicker.vue';
   import BtnFiltro from '@/components/utils/BtnFiltro.vue';
   import AlertDataTable from '@/components/utils/AlertDataTable.vue'
-  import SearchDataTAble from '@/components/utils/SearchDataTAble.vue'
+  import SearchDataTAble from '@/components/utils/SearchDataTable.vue'
   import moment from 'moment';
 
   const { xs }         = useDisplay();
