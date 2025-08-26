@@ -68,8 +68,14 @@
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" class="d-flex justify-center pt-2 pb-1">
-                    <v-btn color="primary" :loading="inicioSecion" type="submit">
+                    <v-btn color="primary" :loading="!registrar ? inicioSecion : loadingRegistro" type="submit">
                       {{ registrar ? 'Registrarse' : 'Iniciar sesión' }}
+                    </v-btn>
+                  </v-col>
+                  <v-divider class="mt-4 mb-2" :thickness="3" color="black"></v-divider>
+                  <v-col cols="12" class="d-flex justify-center">
+                    <v-btn color="footer" @click="controlarRegistro()">
+                      {{ !registrar ? 'Registrarse' : 'Iniciar sesión' }}
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -109,6 +115,7 @@
   const contras        = ref('');
   const email          = ref('');
   const inicioSecion   = ref(false);
+  const loadingRegistro= ref(false);
   const registrar      = ref(false);
   const router         = useRouter();
   const route          = useRoute();
@@ -123,11 +130,6 @@
     let error = {  resultado: 1,  msj: '' };
 
     if(registrar.value){
-      if( !email.value || !emailPattern.test(email.value)){
-        error.resultado = 0;
-        error.msj       = 'Ingresar email válido.';
-        return error
-      }
       if(!nombre.value){
         error.resultado = 0;
         error.msj       = 'Ingresar Nombre y Apellido';
@@ -138,6 +140,11 @@
         error.msj       = 'Ingresar Nombre de Usuario';
         return error
       }    
+      if( !email.value || !emailPattern.test(email.value)){
+        error.resultado = 0;
+        error.msj       = 'Ingresar email válido.';
+        return error
+      }
     }else{
       if(!usuario.value){
         error.resultado = 0;
@@ -160,14 +167,17 @@
       useGenericos.colorSnack   = 'info';
       return 
     }
-    inicioSecion.value = true;
+
     let res; 
     if(registrar.value){
+      loadingRegistro.value = true;
       res = await auth.registrarse(nombre.value, username.value, email.value, contras.value);
+      loadingRegistro.value = false;
     }else{
+      inicioSecion.value = true;
       res = await auth.iniciarSesion(usuario.value, contras.value);
+      inicioSecion.value = false;
     }
-    inicioSecion.value = false;
     if(res.resultado == 0){
       useGenericos.activarSnack = true;
       useGenericos.textoSnack   = res.msj;
