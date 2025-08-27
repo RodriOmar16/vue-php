@@ -24,7 +24,15 @@
           class="elevation-1"
           dense
         >
-          <template #item.acciones="{ item }">
+          <!--<template #item.acciones="{ item }">
+            <v-btn variant="text" size="small" icon color="info" @click="editar(item)">
+              <v-icon>fa-solid fa-pen</v-icon>
+            </v-btn>
+            <v-btn variant="text" size="small" icon color="error" @click="eliminarUser(item.id)">
+              <v-icon>fa-solid fa-trash</v-icon>
+            </v-btn>
+          </template>-->
+          <template v-slot:[`item.acciones`]="{ item }">
             <v-btn variant="text" size="small" icon color="info" @click="editar(item)">
               <v-icon>fa-solid fa-pen</v-icon>
             </v-btn>
