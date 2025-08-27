@@ -25,11 +25,11 @@
           dense
         >
           <template #item.acciones="{ item }">
-            <v-btn icon color="info" @click="editar(item)">
-              <v-icon>mdi-pencil</v-icon>
+            <v-btn variant="text" size="small" icon color="info" @click="editar(item)">
+              <v-icon>fa-solid fa-pen</v-icon>
             </v-btn>
-            <v-btn icon color="error" @click="eliminarUsuario(item.id)">
-              <v-icon>mdi-delete</v-icon>
+            <v-btn variant="text" size="small" icon color="error" @click="eliminarUser(item.id)">
+              <v-icon>fa-solid fa-trash</v-icon>
             </v-btn>
           </template>
         </v-data-table>
@@ -82,13 +82,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import {
-  obtenerUsuarios,
-  crearUsuario,
-  editarUsuario,
-  eliminarUsuario,
-} from '@/services/usuariosService';
+  import { ref, onMounted } from 'vue';
+  import { obtenerUsuarios,  crearUsuario,  editarUsuario,  eliminarUsuario,} from '@/services/usuariosService';
+  import { genericosStore } from '@/store/genericos';
 
   onMounted(async () => {
     await init();
@@ -96,91 +92,91 @@ import {
 
   //Methods
   const init = async () => {
-    useGenericos.loading = true;
+    genericosStore.loading = true;
     //consultas a la api
-    useGenericos.loading = false;
+    genericosStore.loading = false;
   };
 
-// Datos reactivos
-const usuarios = ref([]);
-const headers = [
-  { text: 'ID', value: 'id' },
-  { text: 'Nombre', value: 'nombre' },
-  { text: 'Email', value: 'email' },
-  { text: 'Rol', value: 'rol' },
-  { text: 'Acciones', value: 'acciones', sortable: false },
-];
-const roles = ['Admin', 'Usuario', 'Editor'];
-const formulario = ref({
-  id: null,
-  nombre: '',
-  email: '',
-  rol: '',
-  contrasena: '',
-});
-const dialogo = ref(false);
-const modoEditar = ref(false);
-
-// Métodos reactivos
-const cargarUsuarios = async () => {
-  usuarios.value = await obtenerUsuarios();
-};
-
-const abrirDialogoCrear = () => {
-  modoEditar.value = false;
-  formulario.value = {
+  // Datos reactivos
+  const usuarios = ref([]);
+  const headers = [
+    { text: 'ID', value: 'id' },
+    { text: 'Nombre', value: 'nombre' },
+    { text: 'Email', value: 'email' },
+    { text: 'Rol', value: 'rol' },
+    { text: 'Acciones', value: 'acciones', sortable: false },
+  ];
+  const roles = ['Admin', 'Usuario', 'Editor'];
+  const formulario = ref({
     id: null,
     nombre: '',
     email: '',
     rol: '',
     contrasena: '',
+  });
+  const dialogo = ref(false);
+  const modoEditar = ref(false);
+
+  // Métodos reactivos
+  const cargarUsuarios = async () => {
+    usuarios.value = await obtenerUsuarios();
   };
-  dialogo.value = true;
-};
 
-const editar = (usuario) => {
-  modoEditar.value = true;
-  formulario.value = { ...usuario }; // Clonar los datos del usuario
-  formulario.value.contrasena = ''; // No mostrar la contraseña actual
-  dialogo.value = true;
-};
+  const abrirDialogoCrear = () => {
+    modoEditar.value = false;
+    formulario.value = {
+      id: null,
+      nombre: '',
+      email: '',
+      rol: '',
+      contrasena: '',
+    };
+    dialogo.value = true;
+  };
 
-const guardarUsuario = async () => {
-  if (modoEditar.value) {
-    // Llamada a la API para editar
-    await editarUsuario(formulario.value.id, {
-      nombre: formulario.value.nombre,
-      email: formulario.value.email,
-      rol: formulario.value.rol,
-    });
-  } else {
-    // Llamada a la API para crear
-    await crearUsuario({
-      nombre: formulario.value.nombre,
-      email: formulario.value.email,
-      rol: formulario.value.rol,
-      contrasena: formulario.value.contrasena,
-    });
-  }
+  const editar = (usuario) => {
+    modoEditar.value = true;
+    formulario.value = { ...usuario }; // Clonar los datos del usuario
+    formulario.value.contrasena = ''; // No mostrar la contraseña actual
+    dialogo.value = true;
+  };
 
-  // Actualizar la tabla y cerrar el diálogo
-  cargarUsuarios();
-  cerrarDialogo();
-};
+  const guardarUsuario = async () => {
+    if (modoEditar.value) {
+      // Llamada a la API para editar
+      await editarUsuario(formulario.value.id, {
+        nombre: formulario.value.nombre,
+        email: formulario.value.email,
+        rol: formulario.value.rol,
+      });
+    } else {
+      // Llamada a la API para crear
+      await crearUsuario({
+        nombre: formulario.value.nombre,
+        email: formulario.value.email,
+        rol: formulario.value.rol,
+        contrasena: formulario.value.contrasena,
+      });
+    }
 
-const eliminarUsuario = async (id) => {
-  if (confirm('¿Estás seguro de eliminar este usuario?')) {
-    await eliminarUsuario(id);
+    // Actualizar la tabla y cerrar el diálogo
     cargarUsuarios();
-  }
-};
+    cerrarDialogo();
+  };
 
-const cerrarDialogo = () => {
-  dialogo.value = false;
-};
+  const eliminarUser = async (id) => {
+    if (confirm('¿Estás seguro de eliminar este usuario?')) {
+      await eliminarUsuario(id);
+      cargarUsuarios();
+    }
+  };
 
-// Cargar los usuarios al montar la vista
-onMounted(cargarUsuarios);
+  const cerrarDialogo = () => {
+    dialogo.value = false;
+  };
+
+  // Cargar los usuarios al montar la vista
+  onMounted(cargarUsuarios);
 </script>
 
 <style scoped>
