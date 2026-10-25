@@ -1,59 +1,31 @@
-quiero disponer de 3 roles por ahora:
-- DBA: yo, el máximo poder
-- admin: gran cantidad de cosas para hacer, abm de reservas, abm de usuarios organizadores, abm de combos, etc...
-- organizador: abm de reservas
+*OBJETIVOS GENERALES:
+- Quiero que el sistema sea Multi-tenant
+- Quiero que los clientes finales y los dueños o empleados pueden iniciar sesión
+	-los clientes pueden registrarse para llevar un control de su histórico de reservas. chatear con alguien del salón por dudas puntuales que tiene, ver sus pagos o estados de sus reservas, detalle de la reserva porque si se agregan cosas(el dueño o empleado) el total cambia y debe verlo
+	- los empleados o dueños ingresan para ver las reservas agregar o quitar o cambiar (con consentimiento del cliente), la fecha y hora no se puede cambiar a menos que el día y hora este libre
+- Quiero que el cliente final pueda entrar a la web ver o buscar los salones que más le interesan, entrar y ver:
+	los combos que ofrece el salón, detalles del mismo y el precio base
+	las distintas atracciones, juegos o instalaciones que tiene el lugar
+	consultar por disponibilidad dado una hora y fecha, si la tiene avisar sino la tiene sugerir ese día horas disponibles o libres
+- El dueño puede definir el horario de eventos disponibles estándar (si se agrega tiempo corre por cuenta del dueño aceptar quedarse, siempre que le paguen)
+- Quiero que el cliente final si decide reservar(fijando antes la fecha y hora), pueda seleccionar el combo (se debe mostrar nuevamente los banner del combo y sus detalles), indicar la cantidad de invitados, si quieren servicio(debe aparecer el total del costo de eso), si quieren pagar por la invitación(muchos salones ofrecen hacer el video invitación o foto para la difusión). Luego de esa selección importante, se debe procesar el pago o seña de la reserva (aquí entra el juego las pasarelas de pago o transferencia) que se aprueba o valida según corresponda para convertir la venta en el estado que corresponda (Señada, Paga Total, Falta Pago)
+- Los estados de la reserva que se mostrará: Señada, Paga Total, Falta Pagar, Completada
+- Por otro lado, luego de que se grabe efectivamente la reserva vienen los adicionales. El cliente final no puede editar tiene que comunicarse con el salón para hacer cambios porque impacta en los pagos restantes o vueltos si es que se retracta. Estos adicionales al combo impactan en la reserva como tal pero aún no se me ocurre como adaptarlo, porque como dije puede ser para agregar o quitarle a la reserva y eso impacta en el precio final. Si ya pago algo o todo hay diferencia a favor o en contra del cliente final. Las modificaciones quisiera que solo lo haga el empleado o dueño 
+- Las definiciones de todas las cosas obvio las registra el dueño, el empleado solo edita(agrega o quita) cosas de la venta, consulta detalles de las ventas o cosas en general pero no hacer el flujo de crud
 
-quiero que mi navbar tenga las siguientes opciones y sus descripcion es: 
-- inicio: 
-	banner principal con breve descripcion de lo que trata la web, 
-	imagenes en galeria del salon, juegos, atracciones etc..
-	Equipo (imagenes y nombre del equipo)
-	Testimonio
-	seccion	sobre nosotros 
-	footer
-- Reservas:
-	en esta vista quiero que tenga varias cosas.
-	Abm de reversas
-	crear, eliminar, actualizar reservas
-	obtener todas las reservas por: 
-		rango de fechas, 
-		datos del cliente (para una nueva res),
-		tipo de combo,
-		cantidad de personas ,
-		estado de la reserva
-- Combos:
-	abm de combos:
-	imagenes, pdf,
-	detalles de lo que los combos ofrecen:
-		tiene servicio ? 
-		con comida? menu de niños y/o adultos ?
-		capacidad personas
-		precio por capacidad
-		tiene bebidas?
-		observaciones
-		tiene invitacion virtual ?
-	instalacion o juegos que incluye
-	dias de uso
-	adicional de persona
-- Usuarios (opcion oculta solo para roles admin & dba):
-	abm de usuarios
-	abm de clientes o al momento de editar la reserva que se edite el cliente, ya que existe su id
-	asignacion de roles 
-- Roles (solo DBA): abm de roles 
-
-_________________________________________________________________________
-El login pasaria a ser solo para el personal. Los dueños y los empleados.
-
-Una para que:
-	El cliente reserve:
-	Vea sin registrarse:
-		El lugar fotos 
-		Testimonios, 
-		Combos disponibles
-Otra el panel de administracion para el salon
-
-
-osea por un lado el cliente de autogestiona la reserva y solo paga..
-cuando no va o no quiere la reserva habla al salon y recien ahí  desde kalu se le da de baja la res
-
-desde el lado del administrador, ellos podrian cargar tambien reservas, combos o modificar lo que quieran y hacer todo lo que ya te dije
+---------------
+Las reservas: 
+- información del cliente, si no existe se crea. si ya esta loggeado se usa nomas y no se la pide
+- feche y hora
+- cantidad de invitados
+- que combo eligio (el combo ya está armado no es editable en ese momento)
+- pueden ir adicionales o inflan el precio final (dime tu si va mejor luego de grabar o en el momento, comienzo a creer que ambas)
+- pago: seña, total o restante si agrego cosas
+- adicionales: instalaciones, comida o menú, horas(esto debemos agregarlo en alguna parte como regla)
+- si la cantidad de invitados supera la del combo se calcula y se suma, por eso el combo tiene esos campos
+- total
+Los combos, se forman y definen con:
+- precio base
+- menus admitido (he visto salones variar la cantidad de opcines de comida por eso)
+- instalaciones, juegos o atracciones que incluye (infla directamente el precio por eso es importante que el dueño diga cual quiere incluir, considero que en el adicional debe dejarse elegir pero eso si arrancar la cabeza)
+- 
