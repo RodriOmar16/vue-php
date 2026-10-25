@@ -169,3 +169,84 @@ export interface DatosBloqueo {
   hasta: string;
   motivo?: string;
 }
+
+// ---------- Catálogos del dueño: alimentos, menús, instalaciones, servicios ----------
+// Los importes llegan de la API como texto con 2 decimales («1500.00») y se envían como número.
+
+export type TipoAlimento = 'comida' | 'bebida';
+export type PublicoMenu = 'ninos' | 'adultos' | 'todos';
+export type PrecioPor = 'persona' | 'fijo';
+
+export interface Alimento {
+  id: number;
+  nombre: string;
+  tipo: TipoAlimento;
+  inhabilitado: boolean;
+  creadoEn: string;
+  actualizadoEn: string;
+}
+
+/** Alimento tal como aparece dentro de un menú (puede estar de baja). */
+export type AlimentoEnMenu = Pick<Alimento, 'id' | 'nombre' | 'tipo' | 'inhabilitado'>;
+
+export interface Menu {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  publico: PublicoMenu;
+  precio: string;
+  precioPor: PrecioPor;
+  inhabilitado: boolean;
+  creadoEn: string;
+  actualizadoEn: string;
+  alimentos: AlimentoEnMenu[];
+}
+
+export interface DatosMenu {
+  nombre: string;
+  descripcion?: string;
+  publico?: PublicoMenu;
+  precio: number;
+  precioPor?: PrecioPor;
+  /** Reemplaza el conjunto completo de alimentos; omitirlo no lo toca */
+  alimentoIds?: number[];
+}
+
+export interface Instalacion {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  precio: string;
+  edadMin: number | null;
+  edadMax: number | null;
+  inhabilitado: boolean;
+  creadoEn: string;
+  actualizadoEn: string;
+}
+
+export interface DatosInstalacion {
+  nombre: string;
+  descripcion?: string;
+  precio?: number;
+  /** null quita la restricción */
+  edadMin?: number | null;
+  edadMax?: number | null;
+}
+
+export interface Servicio {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  precio: string;
+  precioPor: PrecioPor;
+  inhabilitado: boolean;
+  creadoEn: string;
+  actualizadoEn: string;
+}
+
+export interface DatosServicio {
+  nombre: string;
+  descripcion?: string;
+  precio: number;
+  precioPor?: PrecioPor;
+}

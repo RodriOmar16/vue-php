@@ -32,6 +32,8 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 - **Dinero**: la API devuelve texto con 2 decimales (`"1500.00"`) y recibe números. El front nunca calcula totales: los pide a la API.
 - **Fechas y horas**: la zona horaria de la empresa viene en `usuario.empresa.zonaHoraria`. Todo lo que el dueño escribe (cierres, y más adelante reservas) se interpreta en ESA zona, no en la del navegador: usar `utils/zonaHoraria.ts` (`localAIso`, `isoALocal`, `describirRango`...; maneja horario de verano) para convertir de/hacia los instantes ISO de la API. Las franjas son `HH:mm` locales sin conversión; las fechas de tarifas, `YYYY-MM-DD`.
 - Los diálogos con clave temporal (alta de empresa, alta de persona, resetear) usan `DialogoClaveTemporal`: la clave se muestra una vez y solo se cierra con «Ya la anoté». Las reglas de formulario compartidas están en `utils/reglas.ts`.
+- Las listas de catálogo comparten `composables/useCatalogo.ts` (carga, filtro de bajas, permisos, baja/reactivación con confirmación). Para sumar otra lista del mismo estilo: view + dialog + `useCatalogo` + ruta hija de `catalogo` + pestaña en `LayoutCatalogo.vue`. Las bajas son lógicas; el género del texto («dado/dada de baja») sale de `genero`.
+- Importes: la API los devuelve como texto («1500.00»); `utils/dinero.ts` los formatea en pesos, valida lo que se escribe y convierte a número para enviar. Al editar un campo opcional que antes tenía valor, vaciarlo envía `null` (la API lo interpreta como «quitar»); omitirlo lo conserva.
 - Los cierres «de días completos» se guardan de las 00:00 a las 00:00 del día siguiente al último; `describirRango` y el diálogo ya lo traducen a «hasta el día X inclusive».
 - Los filtros de query solo admiten los parámetros que la API declara (rechaza los desconocidos con 400).
 - UI en español, iconos FontAwesome (`fa-solid fa-...`), accesibilidad básica (`role="alert"`, `aria-label` en botones de icono).
@@ -47,7 +49,7 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 2. ~~Panel Plataforma (superadmin): alta de empresas y reseteo de dueño~~ (hecha)
 3. ~~Equipo (dueño): alta de empleados/dueños con clave temporal~~ (hecha)
 4. ~~Salones, franjas horarias y bloqueos~~ (hecha: `/admin/salones`, `/admin/salones/:id/horarios`, `/admin/cierres`; el empleado solo consulta)
-5. Catálogos: alimentos, menús, instalaciones, servicios
+5. ~~Catálogos: alimentos, menús, instalaciones, servicios~~ (hecha: `/admin/catalogo/{menus,alimentos,instalaciones,servicios}`; el empleado solo consulta)
 6. Combos: tarifas y cotizador
 7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO). El sitio público podría ser un proyecto Nuxt aparte (decisión pendiente, ver CLAUDE.md de la API); el cliente ve «Mi cuenta», no «Usuarios».
 - Deuda: bundle de ~680 kB (Vuetify completo; usar `vite-plugin-vuetify`), actualizaciones mayores de dependencias (vite 8, vuetify 4, pinia 4, vue-router 5), `FechaPicker` y utilidades aún en JS.

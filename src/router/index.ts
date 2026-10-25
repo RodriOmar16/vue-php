@@ -58,6 +58,18 @@ const router = createRouter({
           meta: { roles: ['propietario', 'empleado'] },
         },
         {
+          path: 'catalogo',
+          component: () => import('@/views/admin/catalogo/LayoutCatalogo.vue'),
+          redirect: { name: 'admin-catalogo-menus' },
+          meta: { roles: ['propietario', 'empleado'] },
+          children: [
+            { path: 'menus', name: 'admin-catalogo-menus', component: () => import('@/views/admin/catalogo/MenusView.vue') },
+            { path: 'alimentos', name: 'admin-catalogo-alimentos', component: () => import('@/views/admin/catalogo/AlimentosView.vue') },
+            { path: 'instalaciones', name: 'admin-catalogo-instalaciones', component: () => import('@/views/admin/catalogo/InstalacionesView.vue') },
+            { path: 'servicios', name: 'admin-catalogo-servicios', component: () => import('@/views/admin/catalogo/ServiciosView.vue') },
+          ],
+        },
+        {
           path: 'equipo',
           name: 'admin-equipo',
           component: () => import('@/views/admin/equipo/EquipoView.vue'),

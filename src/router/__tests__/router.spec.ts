@@ -113,6 +113,49 @@ describe('router de la aplicación (rutas + guardias + sesión)', () => {
     expect((await ir('/admin')).name).toBe('admin-login');
   });
 
+  describe('permisos por rol en las secciones de la empresa', () => {
+    const conRol = async (rol: Perfil['rol']) => {
+      localStorage.setItem('reservas.token', 'T');
+      setActivePinia(createPinia());
+      vi.mocked(auth.obtenerPerfil).mockResolvedValue(perfil({ rol, empresa: rol === 'superadmin' ? null : perfil().empresa }));
+    };
+
+    it.each(['propietario', 'empleado'] as const)('%s: /admin/catalogo entra directo a Menús', async (rol) => {
+      await conRol(rol);
+      expect((await ir('/admin/catalogo')).name).toBe('admin-catalogo-menus');
+      expect((await ir('/admin/catalogo/servicios')).name).toBe('admin-catalogo-servicios');
+    });
+
+    it.each(['/admin/salones', '/admin/cierres', '/admin/catalogo/alimentos', '/admin/salones/3/horarios'])(
+      'el empleado puede ver %s',
+      async (ruta) => {
+        await conRol('empleado');
+        expect((await ir(ruta)).fullPath).toBe(ruta);
+      },
+    );
+
+    it('el empleado NO entra a Equipo (solo dueños)', async () => {
+      await conRol('empleado');
+      expect((await ir('/admin/equipo')).name).toBe('admin-inicio');
+      expect(genericosStore().textoSnack).toContain('permiso');
+    });
+
+    it('el superadmin no entra a las secciones de una empresa, ni el dueño a Plataforma', async () => {
+      await conRol('superadmin');
+      for (const ruta of ['/admin/salones', '/admin/catalogo', '/admin/equipo', '/admin/cierres']) {
+        await ir('/');
+        expect((await ir(ruta)).name, ruta).toBe('admin-inicio');
+      }
+      expect((await ir('/admin/plataforma/empresas')).name).toBe('admin-plataforma-empresas');
+
+      await ir('/');
+      await conRol('propietario');
+      useSesionStore().cerrarSesion();
+      await conRol('propietario');
+      expect((await ir('/admin/plataforma/empresas')).name).toBe('admin-inicio');
+    });
+  });
+
   describe('coherencia entre el menú y las rutas', () => {
     it.each(ITEMS_MENU.map((item) => [item.titulo, item] as const))(
       'la opción «%s» apunta a una ruta real del panel con los mismos roles',
