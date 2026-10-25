@@ -1,33 +1,50 @@
-# vue-php
+# vue-php (front del sistema de reservas)
 
-Front del sistema de reservas de un salón de eventos (reservas, combos, usuarios).
-Consume la API PHP `miapp-api` (Laragon, `http://localhost/miapp-api/`). Este repo es solo el front.
+Front multi-tenant para salones de fiestas: sitio público para clientes (en construcción) y back office de dueños/empleados bajo `/admin` (como el `/wp-admin` de WordPress). Consume `api-reservas` (NestJS) en `D:\Disco C\Documentos\Mis Proyectos\api-reservas`. La API PHP vieja (`miapp-api`) ya no se usa.
 
 ## Stack
-Vue 3 (`<script setup>`, JavaScript, sin TS) · Vite · Vuetify 3 · Pinia · Vue Router 4 · moment · FontAwesome · Vitest + jsdom.
+Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no soporta TS 7) · Vite · Vuetify 3 · Pinia · Vue Router 4 · Vitest + @vue/test-utils + jsdom. Sin axios: cliente `fetch` propio.
 
 ## Comandos
-- `npm run serve` — dev server (el README dice `dev`, pero el script es `serve`)
-- `npm run build` / `npm run preview`
-- `npm run test:unit` — Vitest (todavía no hay tests)
+- `npm run dev` (o `serve`) — dev server en http://localhost:5173
+- `npm run typecheck` — `vue-tsc --noEmit`
+- `npm run build` — typecheck + `vite build`
+- `npm run test:unit` — Vitest (`npx vitest run` para una pasada)
+- La API debe estar corriendo (`npm run start:dev` en `api-reservas`, puerto 3000). Los orígenes permitidos por CORS se configuran en su `.env` (`CORS_ORIGINS`, por defecto `http://localhost:5173`).
+
+## Entorno
+- `.env.example` documenta `VITE_API_URL` (default `http://localhost:3000/api`).
+- Login automático de desarrollo: poner `VITE_DEV_EMAIL` y `VITE_DEV_PASSWORD` en `.env.development.local` (git lo ignora por `*.local`). Usa el login normal de la API; no hay atajos de autenticación, y en el build de producción no hace nada. Cerrar sesión a propósito lo desactiva hasta el próximo login manual.
 
 ## Estructura (`src/`)
-- `views/` por módulo: `general`, `reservas`, `combos`, `usuarios`
-- `components/generales` (navbar, footer, logo) y `components/utils` (FechaPicker, Loading, SnackBar, ModalConfirmar, etc.)
-- `services/` — llamadas a la API vía `apiFetch` (`api.js`); un archivo por módulo
-- `store/` — Pinia (`auth`, `genericos` para loading/snackbar, `reservas`, `usuarios`)
-- `router/index.js` — guard por token en `localStorage`; alias `@` = `src/`
-- `otros/` — notas de diseño (roles, flujos de reservas y combos, SQL); leerlas antes de implementar módulos
+- `api/` — `http.ts` (cliente tipado `ClienteHttp`, `ApiError`), `cliente.ts` (instancia única), `auth.ts`, `tipos.ts` (tipos de respuesta escritos a mano: la API aún no documenta respuestas en Swagger), `token.ts`. Un archivo por recurso a medida que se agreguen.
+- `store/` — Pinia: `sesion.ts` (token, perfil, rol), `genericos.ts` (loading + snackbar global).
+- `router/` — `index.ts` (rutas y `beforeEach`), `guardias.ts` (decisión pura de acceso, testeada), `menu.ts` (menú lateral por rol), `redireccion.ts` (anti open-redirect), `autologin.ts`.
+- `layouts/` — `LayoutPublico` (sitio) y `LayoutAdmin` (barra + menú lateral por rol).
+- `views/admin/` — `LoginAdmin`, `CambiarPassword`, `AdminInicio`. `views/general/` — sitio público. `views/_pendientes/` — pantallas del diseño viejo, sin ruta ni compilación, a rehacer una por rebanada (ver su README).
+- `components/utils/` — `Loading`, `SnackBar` (ya TS); el resto (`FechaPicker`, `ModalConfirmar`, etc.) sigue en JS y se convierte al usarlo.
+- Tests junto al código en `__tests__/`.
 
 ## Convenciones
-- Respuesta estándar de la API: `{ resultado: 0|1, msj, ... }`; `apiFetch` devuelve `resultado: 0` ante cualquier error.
-- Feedback al usuario: `genericosStore().setSnackBar(texto, color)` y `loading`.
-- Fechas en UI `DD/MM/YYYY`; la API usa `YYYY-MM-DD`.
-- UI en español. Íconos FontAwesome (`fa-solid fa-...`).
-- Roles previstos: DBA, admin, organizador. La autorización real debe validarse en la API, no solo en el front.
+- **Roles**: `propietario` (se muestra «Dueño»), `empleado`, `superadmin` (solo lo ve quien lo es). El front solo mejora la experiencia: la seguridad real está en la API.
+- **Rutas**: `meta` declara `requiereAuth`, `soloInvitado`, `roles`, `permiteCambioPassword` (tipado en `guardias.ts`). Para sumar una sección: ruta hija de `/admin` con sus `roles` + item en `router/menu.ts` con los mismos roles + vista + `api/<recurso>.ts` + tests.
+- **Errores de la API**: siempre `ApiError` (`status`, `message` en español, `code` opcional). 401 en ruta autenticada → `alNoAutorizado` (cierra sesión y manda al login con `?redirect=`); 403 `PASSWORD_CHANGE_REQUIRED` → pantalla de cambio de clave; `status 0` = sin conexión.
+- **Dinero**: la API devuelve texto con 2 decimales (`"1500.00"`) y recibe números. El front nunca calcula totales: los pide a la API.
+- **Fechas**: `YYYY-MM-DD` locales de la empresa; las horas de franjas son `HH:mm` locales. Los instantes (`inicio` de una reserva) vienen con zona horaria.
+- Los filtros de query solo admiten los parámetros que la API declara (rechaza los desconocidos con 400).
+- UI en español, iconos FontAwesome (`fa-solid fa-...`), accesibilidad básica (`role="alert"`, `aria-label` en botones de icono).
 
-## Estado y pendientes conocidos
-- `reservasService.js` vacío; stores `reservas` y `usuarios` vacíos; `Reservas.vue` usa datos hardcodeados.
-- `auth.js` guarda la contraseña en el state (quitar).
-- Sin roles en el router; sin manejo de 401/token expirado.
-- Dependencias desactualizadas con vulnerabilidades (`npm audit`).
+## Tests
+- Hay que mockear `@/api/auth` (u otro módulo de API) con `vi.mock`, no `fetch`, salvo en los tests del cliente HTTP.
+- Vuetify en jsdom necesita `vitest.setup.ts` (ResizeObserver, matchMedia, visualViewport) y `server.deps.inline: ['vuetify']`. Definir esos stubs como funciones normales, no `vi.fn` (`vi.resetAllMocks()` los vaciaría).
+- Navegar al mismo path dos veces es una navegación duplicada (sin guardias): salir a otra ruta antes.
+
+## Pendientes (por rebanadas)
+1. ~~Base: login, sesión, layout, cambio de clave~~ (hecha)
+2. Panel Plataforma (superadmin): alta de empresas y reseteo de dueño
+3. Equipo (dueño): alta de empleados/dueños con clave temporal
+4. Salones, franjas horarias y bloqueos
+5. Catálogos: alimentos, menús, instalaciones, servicios
+6. Combos: tarifas y cotizador
+7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO)
+- Deuda: bundle de ~680 kB (Vuetify completo; usar `vite-plugin-vuetify`), actualizaciones mayores de dependencias (vite 8, vuetify 4, pinia 4, vue-router 5), `FechaPicker` y utilidades aún en JS.

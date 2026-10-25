@@ -1,21 +1,11 @@
 <template>
-  <v-snackbar
-    v-model="snackbar"
-    multi-line
-    :color="color"
-    class="pa-0"
-  >
+  <v-snackbar v-model="visible" multi-line :color="color" class="pa-0">
     <v-row>
       <v-col cols="10" class="d-flex align-center">
-        <span>{{ mensaje }}</span>
+        <span role="status">{{ mensaje }}</span>
       </v-col>
       <v-col cols="2" class="d-flex justify-end">
-        <v-btn
-          icon
-          small variant="plain"
-          @click="cerrarSnackbar"
-          class=""
-        >
+        <v-btn icon size="small" variant="plain" aria-label="Cerrar aviso" @click="visible = false">
           <v-icon>fa-solid fa-xmark</v-icon>
         </v-btn>
       </v-col>
@@ -23,33 +13,17 @@
   </v-snackbar>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 
-// Props accesibles automáticamente
-const props = defineProps({
-  modelValue: Boolean,
-  mensaje: {
-    type: String,
-    default: '',
-  },
-  color: {
-    type: String,
-    default: 'info',
-  },
+const props = withDefaults(
+  defineProps<{ modelValue?: boolean; mensaje?: string; color?: string }>(),
+  { modelValue: false, mensaje: '', color: 'info' },
+);
+const emit = defineEmits<{ 'update:modelValue': [valor: boolean] }>();
+
+const visible = computed({
+  get: () => props.modelValue,
+  set: (valor: boolean) => emit('update:modelValue', valor),
 });
-
-// Define Emits
-const emit = defineEmits(['update:modelValue']);
-
-// Computed para manejar el `v-model`
-const snackbar = computed({
-  get: () => props.modelValue, // Usamos directamente `modelValue`, que es la prop reactiva
-  set: (value) => emit('update:modelValue', value), // Emitimos la actualización correctamente
-});
-
-// Método para cerrar el snackbar
-const cerrarSnackbar = () => {
-  snackbar.value = false;
-};
 </script>

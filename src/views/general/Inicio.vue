@@ -1,24 +1,13 @@
 <template>
-  <div style="margin-top: 70px;">
-    Bienvenid@: {{ auth.usuario ? auth.usuario : auth.username }}, Autenticado?  {{ auth.isAuthenticated }}
-  </div>
+  <v-container class="py-12">
+    <v-row justify="center">
+      <v-col cols="12" md="8" class="text-center">
+        <h1 class="text-h4 mb-4">Reservá tu salón de fiestas</h1>
+        <p class="text-body-1 text-medium-emphasis">
+          Muy pronto vas a poder ver los salones, combos y atracciones, consultar la
+          disponibilidad de tu fecha y reservar online.
+        </p>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
-<script setup>
-  import { useAuthStore } from '@/store/auth';
-  import { onMounted, ref } from 'vue';
-  import { genericosStore } from '@/store/genericos';
-
-  const auth         = useAuthStore();
-  const useGenericos = genericosStore();
-
-  onMounted(async () => {
-    await init();
-  });
-
-  //Methods
-  const init = async () => {
-    useGenericos.loading = true;
-    //consultas a la api
-    useGenericos.loading = false;
-  };
-</script>

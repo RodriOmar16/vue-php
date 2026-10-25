@@ -9,6 +9,9 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      setupFiles: ['./vitest.setup.ts'],
+      // Vuetify importa archivos .css desde node_modules: Vite debe procesarlo, no Node.
+      server: { deps: { inline: ['vuetify'] } },
     },
   }),
 )

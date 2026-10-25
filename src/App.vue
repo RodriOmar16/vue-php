@@ -1,31 +1,16 @@
 <template>
-  <v-app style="width: 100%">
-    <!-- Nav bar -->
-    <Navigation/>
-    <!-- Resto del contenido -->
-    <v-main >
-      <Loading :loading="useGenericos.loading" />
-      <SnackBar 
-        v-model="useGenericos.activarSnack"
-        :mensaje="useGenericos.textoSnack"
-        :color="useGenericos.colorSnack"
-      />
-      <RouterView />
-    </v-main>
+  <v-app>
+    <RouterView />
+    <Loading :loading="ui.loading" />
+    <SnackBar v-model="ui.activarSnack" :mensaje="ui.textoSnack" :color="ui.colorSnack" />
   </v-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { RouterView } from 'vue-router';
-import { genericosStore } from './store/genericos';
-import Loading from './components/utils/Loading.vue';
-import SnackBar from './components/utils/SnackBar.vue';
-import Navigation from './components/generales/Navigation.vue';
+import Loading from '@/components/utils/Loading.vue';
+import SnackBar from '@/components/utils/SnackBar.vue';
+import { genericosStore } from '@/store/genericos';
 
-const useGenericos = genericosStore();
-
+const ui = genericosStore();
 </script>
-
-<style scoped>
-
-</style>
