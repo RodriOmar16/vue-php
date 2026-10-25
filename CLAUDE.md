@@ -23,15 +23,16 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 - `layouts/` — `LayoutPublico` (sitio) y `LayoutAdmin` (barra + menú lateral por rol).
 - `views/admin/` — `LoginAdmin`, `CambiarPassword`, `AdminInicio`. `views/general/` — sitio público. `views/_pendientes/` — pantallas del diseño viejo, sin ruta ni compilación, a rehacer una por rebanada (ver su README).
 - `components/utils/` — `Loading`, `SnackBar` (ya TS); el resto (`FechaPicker`, `ModalConfirmar`, etc.) sigue en JS y se convierte al usarlo.
-- Tests junto al código en `__tests__/`.
+- `test/ayudas.ts` (en `src/test/`): ayudantes comunes para probar pantallas con diálogos de Vuetify. Tests junto al código en `__tests__/`.
 
 ## Convenciones
 - **Roles**: `propietario` (se muestra «Dueño»), `empleado`, `superadmin` (solo lo ve quien lo es). El front solo mejora la experiencia: la seguridad real está en la API.
 - **Rutas**: `meta` declara `requiereAuth`, `soloInvitado`, `roles`, `permiteCambioPassword` (tipado en `guardias.ts`). Para sumar una sección: ruta hija de `/admin` con sus `roles` + item en `router/menu.ts` con los mismos roles + vista + `api/<recurso>.ts` + tests.
 - **Errores de la API**: siempre `ApiError` (`status`, `message` en español, `code` opcional). 401 en ruta autenticada → `alNoAutorizado` (cierra sesión y manda al login con `?redirect=`); 403 `PASSWORD_CHANGE_REQUIRED` → pantalla de cambio de clave; `status 0` = sin conexión.
 - **Dinero**: la API devuelve texto con 2 decimales (`"1500.00"`) y recibe números. El front nunca calcula totales: los pide a la API.
-- **Fechas**: `YYYY-MM-DD` locales de la empresa; las horas de franjas son `HH:mm` locales. Los instantes (`inicio` de una reserva) vienen con zona horaria.
+- **Fechas y horas**: la zona horaria de la empresa viene en `usuario.empresa.zonaHoraria`. Todo lo que el dueño escribe (cierres, y más adelante reservas) se interpreta en ESA zona, no en la del navegador: usar `utils/zonaHoraria.ts` (`localAIso`, `isoALocal`, `describirRango`...; maneja horario de verano) para convertir de/hacia los instantes ISO de la API. Las franjas son `HH:mm` locales sin conversión; las fechas de tarifas, `YYYY-MM-DD`.
 - Los diálogos con clave temporal (alta de empresa, alta de persona, resetear) usan `DialogoClaveTemporal`: la clave se muestra una vez y solo se cierra con «Ya la anoté». Las reglas de formulario compartidas están en `utils/reglas.ts`.
+- Los cierres «de días completos» se guardan de las 00:00 a las 00:00 del día siguiente al último; `describirRango` y el diálogo ya lo traducen a «hasta el día X inclusive».
 - Los filtros de query solo admiten los parámetros que la API declara (rechaza los desconocidos con 400).
 - UI en español, iconos FontAwesome (`fa-solid fa-...`), accesibilidad básica (`role="alert"`, `aria-label` en botones de icono).
 
@@ -45,7 +46,7 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 1. ~~Base: login, sesión, layout, cambio de clave~~ (hecha)
 2. ~~Panel Plataforma (superadmin): alta de empresas y reseteo de dueño~~ (hecha)
 3. ~~Equipo (dueño): alta de empleados/dueños con clave temporal~~ (hecha)
-4. Salones, franjas horarias y bloqueos
+4. ~~Salones, franjas horarias y bloqueos~~ (hecha: `/admin/salones`, `/admin/salones/:id/horarios`, `/admin/cierres`; el empleado solo consulta)
 5. Catálogos: alimentos, menús, instalaciones, servicios
 6. Combos: tarifas y cotizador
 7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO). El sitio público podría ser un proyecto Nuxt aparte (decisión pendiente, ver CLAUDE.md de la API); el cliente ve «Mi cuenta», no «Usuarios».

@@ -13,7 +13,7 @@ vi.mock('@/api/auth');
 
 const perfil: Perfil = {
   id: 1, nombre: 'María', username: 'maria', email: 'maria@x.com',
-  rol: 'propietario', debeCambiarPassword: false, empresa: { id: 1, slug: 'demo', nombre: 'Demo' },
+  rol: 'propietario', debeCambiarPassword: false, empresa: { id: 1, slug: 'demo', nombre: 'Demo', zonaHoraria: 'America/Argentina/Buenos_Aires' },
 };
 const respuestaLogin = {
   accessToken: 'TOKEN', tokenType: 'Bearer' as const, expiresIn: 28800, debeCambiarPassword: false, usuario: perfil,

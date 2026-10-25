@@ -39,6 +39,25 @@ const router = createRouter({
           meta: { roles: ['superadmin'] },
         },
         {
+          path: 'salones',
+          name: 'admin-salones',
+          component: () => import('@/views/admin/salones/SalonesView.vue'),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
+          path: 'salones/:id/horarios',
+          name: 'admin-salon-horarios',
+          component: () => import('@/views/admin/salones/HorariosSalonView.vue'),
+          props: (route) => ({ id: Number(route.params.id) }),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
+          path: 'cierres',
+          name: 'admin-bloqueos',
+          component: () => import('@/views/admin/salones/BloqueosView.vue'),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
           path: 'equipo',
           name: 'admin-equipo',
           component: () => import('@/views/admin/equipo/EquipoView.vue'),

@@ -26,7 +26,7 @@ async function montar(equipo: UsuarioEquipo[] = [YO, EMPLEADO]) {
   setActivePinia(pinia);
   const perfil: Perfil = {
     id: YO.id, nombre: YO.nombre, username: YO.username, email: YO.email, rol: 'propietario',
-    debeCambiarPassword: false, empresa: { id: 1, slug: 'demo', nombre: 'Demo' },
+    debeCambiarPassword: false, empresa: { id: 1, slug: 'demo', nombre: 'Demo', zonaHoraria: 'America/Argentina/Buenos_Aires' },
   };
   useSesionStore().usuario = perfil;
   vi.mocked(api.listarEquipo).mockResolvedValue(equipo);

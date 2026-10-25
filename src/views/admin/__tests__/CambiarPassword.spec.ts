@@ -14,7 +14,7 @@ vi.mock('@/api/auth');
 
 const perfil = (debeCambiarPassword: boolean): Perfil => ({
   id: 1, nombre: 'María', username: 'maria', email: 'maria@x.com',
-  rol: 'propietario', debeCambiarPassword, empresa: { id: 1, slug: 'demo', nombre: 'Demo' },
+  rol: 'propietario', debeCambiarPassword, empresa: { id: 1, slug: 'demo', nombre: 'Demo', zonaHoraria: 'America/Argentina/Buenos_Aires' },
 });
 
 async function montar(debeCambiar: boolean) {

@@ -13,6 +13,8 @@ export interface EmpresaResumen {
   id: number;
   slug: string;
   nombre: string;
+  /** zona IANA de la empresa: las franjas ("15:00") y los cierres se interpretan en ella */
+  zonaHoraria: string;
 }
 
 export interface Perfil {
@@ -105,4 +107,65 @@ export interface RespuestaAltaUsuario {
   usuario: UsuarioEquipo;
   /** se muestra una sola vez */
   passwordTemporal: string;
+}
+
+// ---------- Salones, horarios y cierres ----------
+
+export interface Salon {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  capacidad: number | null;
+  /** el salón que se preselecciona cuando el cliente no elige */
+  esDefault: boolean;
+  /** minutos de margen entre un evento y el siguiente */
+  minutosLimpieza: number;
+  inhabilitado: boolean;
+  creadoEn: string;
+  actualizadoEn: string;
+}
+
+export interface DatosSalon {
+  nombre: string;
+  descripcion?: string;
+  capacidad?: number;
+  minutosLimpieza?: number;
+  esDefault?: boolean;
+  /** solo al crear: ofrecer en el salón nuevo todos los combos activos */
+  ofrecerCombos?: boolean;
+}
+
+/** Ventana en la que el salón recibe eventos un día de la semana. */
+export interface Franja {
+  id: number;
+  salonId: number;
+  /** 1 = lunes ... 7 = domingo */
+  diaSemana: number;
+  /** HH:mm, hora local de la empresa */
+  horaInicio: string;
+  /** HH:mm; si es menor que horaInicio la franja termina al día siguiente */
+  horaFin: string;
+}
+
+export interface DatosFranja {
+  diaSemana: number;
+  horaInicio: string;
+  horaFin: string;
+}
+
+/** Cierre del salón (feriado, mantenimiento...). salonId null = todos los salones. */
+export interface Bloqueo {
+  id: number;
+  salonId: number | null;
+  /** instantes ISO en UTC */
+  desde: string;
+  hasta: string;
+  motivo: string | null;
+}
+
+export interface DatosBloqueo {
+  salonId?: number | null;
+  desde: string;
+  hasta: string;
+  motivo?: string;
 }

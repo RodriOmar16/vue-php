@@ -12,7 +12,7 @@ import LayoutAdmin from '../LayoutAdmin.vue';
 
 const perfil = (extra: Partial<Perfil> = {}): Perfil => ({
   id: 1, nombre: 'María Pérez', username: 'maria', email: 'maria@x.com',
-  rol: 'propietario', debeCambiarPassword: false, empresa: { id: 1, slug: 'demo', nombre: 'Salón Demo' },
+  rol: 'propietario', debeCambiarPassword: false, empresa: { id: 1, slug: 'demo', nombre: 'Salón Demo', zonaHoraria: 'America/Argentina/Buenos_Aires' },
   ...extra,
 });
 
@@ -37,6 +37,8 @@ async function montar(usuario: Perfil) {
           // las rutas a las que apunta el menú deben existir en este router de prueba
           { path: 'plataforma/empresas', name: 'admin-plataforma-empresas', component: vacio },
           { path: 'equipo', name: 'admin-equipo', component: vacio },
+          { path: 'salones', name: 'admin-salones', component: vacio },
+          { path: 'cierres', name: 'admin-bloqueos', component: vacio },
         ],
       },
     ],

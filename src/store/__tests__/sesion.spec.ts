@@ -15,7 +15,7 @@ const perfil = (extra: Partial<Perfil> = {}): Perfil => ({
   email: 'maria@x.com',
   rol: 'propietario',
   debeCambiarPassword: false,
-  empresa: { id: 1, slug: 'demo', nombre: 'Demo' },
+  empresa: { id: 1, slug: 'demo', nombre: 'Demo', zonaHoraria: 'America/Argentina/Buenos_Aires' },
   ...extra,
 });
 const login = (usuario: Perfil, token = 'T1'): RespuestaLogin => ({
