@@ -39,6 +39,12 @@ const router = createRouter({
           meta: { roles: ['superadmin'] },
         },
         {
+          path: 'equipo',
+          name: 'admin-equipo',
+          component: () => import('@/views/admin/equipo/EquipoView.vue'),
+          meta: { roles: ['propietario'] },
+        },
+        {
           path: 'cambiar-password',
           name: 'admin-cambiar-password',
           component: () => import('@/views/admin/CambiarPassword.vue'),

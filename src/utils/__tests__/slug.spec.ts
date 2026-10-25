@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SLUG_VALIDO, slugificar, USERNAME_VALIDO } from '../slug';
+import { SLUG_VALIDO, slugificar } from '../slug';
 
 describe('slugificar', () => {
   it.each([
@@ -29,17 +29,11 @@ describe('slugificar', () => {
   });
 });
 
-describe('expresiones de validación', () => {
-  it('SLUG_VALIDO rechaza mayúsculas, espacios y guiones dobles', () => {
+describe('SLUG_VALIDO', () => {
+  it('rechaza mayúsculas, espacios y guiones dobles', () => {
     expect(SLUG_VALIDO.test('los-pinos')).toBe(true);
     for (const malo of ['Los-Pinos', 'los pinos', 'los--pinos', '-los', 'los-', '']) {
       expect(SLUG_VALIDO.test(malo)).toBe(false);
     }
-  });
-
-  it('USERNAME_VALIDO', () => {
-    expect(USERNAME_VALIDO.test('maria.perez-1_x')).toBe(true);
-    expect(USERNAME_VALIDO.test('María')).toBe(false);
-    expect(USERNAME_VALIDO.test('con espacio')).toBe(false);
   });
 });

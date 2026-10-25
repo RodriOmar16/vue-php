@@ -77,3 +77,32 @@ export interface RespuestaResetDueno {
   dueno: UsuarioResumen;
   passwordTemporal: string;
 }
+
+// ---------- Equipo de la empresa (dueño) ----------
+
+export type RolEquipo = 'propietario' | 'empleado';
+
+export interface UsuarioEquipo {
+  id: number;
+  nombre: string;
+  username: string;
+  email: string;
+  rol: RolEquipo;
+  inhabilitado: boolean;
+  /** true mientras no cambie la clave temporal con la que se le dio de alta */
+  debeCambiarPassword: boolean;
+  creadoEn: string;
+}
+
+export interface AltaUsuario {
+  nombre: string;
+  username: string;
+  email: string;
+  rol: RolEquipo;
+}
+
+export interface RespuestaAltaUsuario {
+  usuario: UsuarioEquipo;
+  /** se muestra una sola vez */
+  passwordTemporal: string;
+}

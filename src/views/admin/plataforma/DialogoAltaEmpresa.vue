@@ -82,7 +82,8 @@ import type { VForm } from 'vuetify/components';
 import { crearEmpresa } from '@/api/plataforma';
 import { ApiError } from '@/api/http';
 import type { RespuestaAltaEmpresa } from '@/api/tipos';
-import { SLUG_VALIDO, SLUGS_RESERVADOS, slugificar, USERNAME_VALIDO } from '@/utils/slug';
+import { email, maximo, requerido, usernameDesdeEmail, usernameFormato, usernameLargo } from '@/utils/reglas';
+import { SLUG_VALIDO, SLUGS_RESERVADOS, slugificar } from '@/utils/slug';
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{
@@ -123,22 +124,20 @@ const error = ref('');
 const sugerirSlug = (valor: string) => {
   if (!slugEditadoAMano.value) slug.value = slugificar(valor);
 };
-const sugerirUsername = (email: string) => {
-  if (!usernameEditadoAMano.value) {
-    dueno.username = (email.split('@')[0] ?? '').toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 30);
-  }
+const sugerirUsername = (correo: string) => {
+  if (!usernameEditadoAMano.value) dueno.username = usernameDesdeEmail(correo);
 };
 
 const reglas = {
-  requerido: (v: string) => !!v?.trim() || 'Campo obligatorio',
-  maximo150: (v: string) => (v?.length ?? 0) <= 150 || 'Máximo 150 caracteres',
-  maximo100: (v: string) => (v?.length ?? 0) <= 100 || 'Máximo 100 caracteres',
-  email: (v: string) => /^\S+@\S+\.\S+$/.test(v ?? '') || 'Ingresá un email válido',
+  requerido,
+  maximo150: maximo(150),
+  maximo100: maximo(100),
+  email,
+  usernameFormato,
+  usernameLargo,
   slugFormato: (v: string) => !v || SLUG_VALIDO.test(v) || 'Solo minúsculas, números y guiones simples entre palabras',
   slugLargo: (v: string) => !v || (v.length >= 3 && v.length <= 60) || 'Entre 3 y 60 caracteres',
   slugReservado: (v: string) => !SLUGS_RESERVADOS.includes(v) || 'Ese slug está reservado, elegí otro',
-  usernameFormato: (v: string) => !v || USERNAME_VALIDO.test(v) || 'Solo minúsculas, números, punto, guion y guion bajo',
-  usernameLargo: (v: string) => !v || (v.length >= 3 && v.length <= 30) || 'Entre 3 y 30 caracteres',
 };
 
 function reiniciar() {

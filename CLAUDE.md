@@ -31,20 +31,22 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 - **Errores de la API**: siempre `ApiError` (`status`, `message` en español, `code` opcional). 401 en ruta autenticada → `alNoAutorizado` (cierra sesión y manda al login con `?redirect=`); 403 `PASSWORD_CHANGE_REQUIRED` → pantalla de cambio de clave; `status 0` = sin conexión.
 - **Dinero**: la API devuelve texto con 2 decimales (`"1500.00"`) y recibe números. El front nunca calcula totales: los pide a la API.
 - **Fechas**: `YYYY-MM-DD` locales de la empresa; las horas de franjas son `HH:mm` locales. Los instantes (`inicio` de una reserva) vienen con zona horaria.
+- Los diálogos con clave temporal (alta de empresa, alta de persona, resetear) usan `DialogoClaveTemporal`: la clave se muestra una vez y solo se cierra con «Ya la anoté». Las reglas de formulario compartidas están en `utils/reglas.ts`.
 - Los filtros de query solo admiten los parámetros que la API declara (rechaza los desconocidos con 400).
 - UI en español, iconos FontAwesome (`fa-solid fa-...`), accesibilidad básica (`role="alert"`, `aria-label` en botones de icono).
 
 ## Tests
 - Hay que mockear `@/api/auth` (u otro módulo de API) con `vi.mock`, no `fetch`, salvo en los tests del cliente HTTP.
+- En tests de pantallas con diálogos: los cerrados siguen montados en el DOM y las animaciones no terminan en jsdom; elegir botones dentro de `.v-overlay--active` y no esperar a que el DOM se vacíe (ver los helpers en `EquipoView.spec.ts`).
 - Vuetify en jsdom necesita `vitest.setup.ts` (ResizeObserver, matchMedia, visualViewport) y `server.deps.inline: ['vuetify']`. Definir esos stubs como funciones normales, no `vi.fn` (`vi.resetAllMocks()` los vaciaría).
 - Navegar al mismo path dos veces es una navegación duplicada (sin guardias): salir a otra ruta antes.
 
 ## Pendientes (por rebanadas)
 1. ~~Base: login, sesión, layout, cambio de clave~~ (hecha)
-2. Panel Plataforma (superadmin): alta de empresas y reseteo de dueño
-3. Equipo (dueño): alta de empleados/dueños con clave temporal
+2. ~~Panel Plataforma (superadmin): alta de empresas y reseteo de dueño~~ (hecha)
+3. ~~Equipo (dueño): alta de empleados/dueños con clave temporal~~ (hecha)
 4. Salones, franjas horarias y bloqueos
 5. Catálogos: alimentos, menús, instalaciones, servicios
 6. Combos: tarifas y cotizador
-7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO)
+7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO). El sitio público podría ser un proyecto Nuxt aparte (decisión pendiente, ver CLAUDE.md de la API); el cliente ve «Mi cuenta», no «Usuarios».
 - Deuda: bundle de ~680 kB (Vuetify completo; usar `vite-plugin-vuetify`), actualizaciones mayores de dependencias (vite 8, vuetify 4, pinia 4, vue-router 5), `FechaPicker` y utilidades aún en JS.

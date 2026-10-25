@@ -17,4 +17,3 @@ export const SLUG_VALIDO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 /** Slugs que la API reserva porque chocarían con rutas del sitio. */
 export const SLUGS_RESERVADOS = ['admin', 'api', 'docs', 'plataforma', 'login', 'cliente', 'public', 'www', 'static', 'assets'];
 
-export const USERNAME_VALIDO = /^[a-z0-9._-]+$/;
