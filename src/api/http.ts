@@ -7,6 +7,8 @@ export class ApiError extends Error {
     message: string,
     /** código de negocio opcional que manda la API, p. ej. PASSWORD_CHANGE_REQUIRED */
     readonly code?: string,
+    /** cuerpo JSON completo de la respuesta de error, por si la pantalla necesita más datos (p. ej. una lista de opciones) */
+    readonly cuerpo?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -123,7 +125,7 @@ export class ClienteHttp {
       /* respuesta de error sin JSON */
     }
     const codigo = (cuerpoError as { code?: string } | null)?.code;
-    const error = new ApiError(respuesta.status, extraerMensaje(cuerpoError, respuesta.status), codigo);
+    const error = new ApiError(respuesta.status, extraerMensaje(cuerpoError, respuesta.status), codigo, cuerpoError ?? undefined);
 
     if (respuesta.status === 401 && autenticado) {
       this.opciones.alNoAutorizado?.();

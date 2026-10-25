@@ -1,63 +1,52 @@
 <template>
-  <v-dialog v-model="activo" max-width="600">
+  <v-dialog v-model="visible" max-width="480" :persistent="cargando">
     <v-card>
-      <v-card-title>
-        <span>Confirmar acción</span>
-        <v-spacer></v-spacer>
-        <v-btn icon @click="cerrar">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+      <v-card-title class="d-flex align-center">
+        <v-icon :color="color" class="mr-3">{{ icono }}</v-icon>
+        {{ titulo }}
       </v-card-title>
-
-      <v-divider></v-divider>
-
-      <v-card-text>
-        <v-row class="py-1" justify="center">
-          <v-col cols="12" class="d-flex justify-center py-1">
-            <v-icon :color="colorIcon" size="48">{{ icon }}</v-icon>
-          </v-col>
-          <v-col cols="12" class="py-1">
-            <div class="text-subtitle-1 text-center">{{ text }}</div>
-          </v-col>
-        </v-row>
+      <v-card-text class="text-body-1">
+        <slot>{{ mensaje }}</slot>
       </v-card-text>
-
-      <v-card-actions class="d-flex justify-end">
-        <v-btn color="secondary" @click="cerrar">Cancelar</v-btn>
-        <v-btn color="success" @click="aceptar">Aceptar</v-btn>
+      <v-card-actions class="justify-end">
+        <v-btn variant="text" :disabled="cargando" @click="visible = false">Cancelar</v-btn>
+        <v-btn :color="color" variant="flat" :loading="cargando" @click="emit('confirmar')">
+          {{ textoConfirmar }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
-<script setup>
-  import { computed } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 
-  // Props
-  defineProps({
-    value: Boolean,
-    icon: String,
-    colorIcon: String,
-    text: String,
-  });
+const props = withDefaults(
+  defineProps<{
+    modelValue?: boolean;
+    titulo?: string;
+    mensaje?: string;
+    textoConfirmar?: string;
+    /** warning / error para acciones delicadas; primary para el resto */
+    color?: string;
+    icono?: string;
+    /** mientras corre la acción: botón con spinner y diálogo no descartable */
+    cargando?: boolean;
+  }>(),
+  {
+    modelValue: false,
+    titulo: 'Confirmar acción',
+    mensaje: '',
+    textoConfirmar: 'Aceptar',
+    color: 'primary',
+    icono: 'fa-solid fa-circle-question',
+    cargando: false,
+  },
+);
+const emit = defineEmits<{ 'update:modelValue': [valor: boolean]; confirmar: [] }>();
 
-  // Emits
-  const emit = defineEmits(['update:value', 'confirmar']);
-
-  // Reactivity
-  const activo = computed({
-    get: () => value,
-    set: (val) => emit('update:value', val),
-  });
-
-  // Methods
-  const cerrar = () => {
-    activo.value = false;
-  };
-
-  const aceptar = () => {
-    console.log("Aceptar");
-    activo.value = false;
-    emit('confirmar');
-  };
+const visible = computed({
+  get: () => props.modelValue,
+  set: (valor: boolean) => emit('update:modelValue', valor),
+});
 </script>

@@ -34,6 +34,8 @@ async function montar(usuario: Perfil) {
         children: [
           { path: '', name: 'admin-inicio', component: vacio },
           { path: 'cambiar-password', name: 'admin-cambiar-password', component: vacio },
+          // las rutas a las que apunta el menú deben existir en este router de prueba
+          { path: 'plataforma/empresas', name: 'admin-plataforma-empresas', component: vacio },
         ],
       },
     ],

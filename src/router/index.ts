@@ -33,6 +33,12 @@ const router = createRouter({
       children: [
         { path: '', name: 'admin-inicio', component: () => import('@/views/admin/AdminInicio.vue') },
         {
+          path: 'plataforma/empresas',
+          name: 'admin-plataforma-empresas',
+          component: () => import('@/views/admin/plataforma/EmpresasPlataforma.vue'),
+          meta: { roles: ['superadmin'] },
+        },
+        {
           path: 'cambiar-password',
           name: 'admin-cambiar-password',
           component: () => import('@/views/admin/CambiarPassword.vue'),

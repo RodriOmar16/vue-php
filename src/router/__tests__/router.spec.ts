@@ -7,6 +7,7 @@ import { leerToken } from '@/api/token';
 import { genericosStore } from '@/store/genericos';
 import { useSesionStore } from '@/store/sesion';
 import router from '../index';
+import { ITEMS_MENU } from '../menu';
 
 vi.mock('@/api/auth');
 
@@ -110,5 +111,19 @@ describe('router de la aplicación (rutas + guardias + sesión)', () => {
     useSesionStore().cerrarSesion();
     await ir('/'); // sale del panel (ir a la misma ruta sería una navegación duplicada, sin guardias)
     expect((await ir('/admin')).name).toBe('admin-login');
+  });
+
+  describe('coherencia entre el menú y las rutas', () => {
+    it.each(ITEMS_MENU.map((item) => [item.titulo, item] as const))(
+      'la opción «%s» apunta a una ruta real del panel con los mismos roles',
+      (_titulo, item) => {
+        const resuelta = router.resolve(item.to);
+        expect(resuelta.matched.length, 'la ruta del menú no existe').toBeGreaterThan(0);
+        expect(resuelta.fullPath.startsWith('/admin')).toBe(true);
+        expect(resuelta.meta.requiereAuth).toBe(true); // heredado de /admin
+        // si el menú la oculta a ciertos roles, la ruta también debe bloquearlos (y al revés)
+        expect(resuelta.meta.roles ?? null).toEqual(item.roles ?? null);
+      },
+    );
   });
 });

@@ -34,3 +34,46 @@ export interface RespuestaLogin {
   debeCambiarPassword: boolean;
   usuario: Perfil;
 }
+
+// ---------- Plataforma (solo superadmin) ----------
+
+export interface EmpresaPlataforma {
+  id: number;
+  slug: string;
+  nombre: string;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
+  zonaHoraria: string;
+  inhabilitado: boolean;
+  creadoEn: string;
+  _count: { usuarios: number; salones: number };
+}
+
+export interface AltaEmpresa {
+  nombre: string;
+  slug: string;
+  zonaHoraria?: string;
+  nombreSalon?: string;
+  dueno: { nombre: string; username: string; email: string };
+}
+
+/** Persona que recibe una clave temporal (dueño o empleado). */
+export interface UsuarioResumen {
+  id: number;
+  nombre: string;
+  email: string;
+}
+
+export interface RespuestaAltaEmpresa {
+  empresa: Omit<EmpresaPlataforma, '_count'>;
+  salon: { id: number; nombre: string; esDefault: boolean };
+  dueno: UsuarioResumen & { username: string; rol: RolCodigo; debeCambiarPassword: boolean };
+  /** se muestra una sola vez */
+  passwordTemporal: string;
+}
+
+export interface RespuestaResetDueno {
+  dueno: UsuarioResumen;
+  passwordTemporal: string;
+}

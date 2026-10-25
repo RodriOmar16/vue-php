@@ -15,6 +15,12 @@ export interface ItemMenu {
  */
 export const ITEMS_MENU: ItemMenu[] = [
   { titulo: 'Inicio', icono: 'fa-solid fa-house', to: { name: 'admin-inicio' } },
+  {
+    titulo: 'Empresas',
+    icono: 'fa-solid fa-building',
+    to: { name: 'admin-plataforma-empresas' },
+    roles: ['superadmin'],
+  },
 ];
 
 export const menuPara = (rol: RolCodigo | null, items: ItemMenu[] = ITEMS_MENU): ItemMenu[] =>
