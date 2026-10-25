@@ -20,6 +20,8 @@ const PELOTERO = instalacion({ id: 8, nombre: 'Pelotero', descripcion: null, pre
 
 let wrapper: VueWrapper;
 
+const modo = (valor: 'atp' | 'limite') => document.querySelector<HTMLInputElement>('.v-overlay--active input[type="radio"][value="' + valor + '"]');
+
 async function montar(lista: Instalacion[] = [instalacion(), PELOTERO], rol: RolCodigo = 'propietario') {
   const pinia = createPinia();
   setActivePinia(pinia);
@@ -49,7 +51,7 @@ describe('InstalacionesView', () => {
       expect(texto).toContain('De 4 a 12 años');
       expect(texto).toMatch(/2\.500,00/);
       expect(texto).toContain('Pelotero');
-      expect(texto).toContain('Todas las edades');
+      expect(texto).toContain('Apto para todo público (ATP)');
       expect(texto).toContain('Sin cargo');
     });
 
@@ -96,6 +98,31 @@ describe('InstalacionesView', () => {
       await clic(botonPorTexto('Nueva instalación'));
     });
 
+    it('por defecto es «Apto para todo público (ATP)» y no pide edades', () => {
+      expect(modo('atp')!.checked).toBe(true);
+      expect(modo('limite')!.checked).toBe(false);
+      expect(textoPantalla()).not.toContain('Edad mínima');
+    });
+
+    it('al elegir «Con límite de edad» aparecen los campos de edad', async () => {
+      await clic(modo('limite'));
+      expect(textoPantalla()).toContain('Edad mínima');
+      expect(textoPantalla()).toContain('Edad máxima');
+      expect(textoPantalla()).toContain('solo la mínima, solo la máxima, o las dos');
+    });
+
+    it('si escribió edades pero vuelve a ATP, no se envían', async () => {
+      vi.mocked(api.crearInstalacion).mockResolvedValue(PELOTERO);
+      await escribir('Nombre', 'Mesa de ping pong');
+      await clic(modo('limite'));
+      await escribir('Edad mínima', '8');
+      await clic(modo('atp'));
+      await clic(botonActivo('Agregar'));
+      const datos = vi.mocked(api.crearInstalacion).mock.calls[0][0];
+      expect(datos.edadMin).toBeUndefined();
+      expect(datos.edadMax).toBeUndefined();
+    });
+
     it('lo mínimo (solo el nombre): precio 0 y sin edades ni descripción', async () => {
       vi.mocked(api.crearInstalacion).mockResolvedValue(PELOTERO);
       await escribir('Nombre', 'Metegol');
@@ -114,6 +141,7 @@ describe('InstalacionesView', () => {
       await escribir('Nombre', 'Toro mecánico');
       await escribir('Descripción', ' Solo mayores ');
       await escribir('Precio como adicional', '3500.75');
+      await clic(modo('limite'));
       await escribir('Edad mínima', '10');
       await escribir('Edad máxima', '99');
       await clic(botonActivo('Agregar'));
@@ -129,6 +157,7 @@ describe('InstalacionesView', () => {
 
       await escribir('Nombre', 'X');
       await escribir('Precio como adicional', '10.123');
+      await clic(modo('limite'));
       await escribir('Edad mínima', '12');
       await escribir('Edad máxima', '4');
       await clic(botonActivo('Agregar'));
@@ -169,17 +198,49 @@ describe('InstalacionesView', () => {
       });
     });
 
-    it('vaciar las edades las QUITA (se envía null, no se ignora)', async () => {
+    it('elegir «Apto para todo público» QUITA las edades (se envía null, no se ignora)', async () => {
       await montar();
       vi.mocked(api.actualizarInstalacion).mockResolvedValue(instalacion({ edadMin: null, edadMax: null }));
       await clic(botonAria('Editar Cama elástica'));
-      await escribir('Edad mínima', '');
-      await escribir('Edad máxima', '');
+      await clic(modo('atp'));
+      expect(textoPantalla()).not.toContain('Edad mínima'); // los campos de edad desaparecen
       await clic(botonActivo('Guardar cambios'));
 
       const cambios = vi.mocked(api.actualizarInstalacion).mock.calls[0][1];
       expect(cambios.edadMin).toBeNull();
       expect(cambios.edadMax).toBeNull();
+    });
+
+    it('una instalación con edades se abre en «Con límite de edad»; una sin edades, en ATP', async () => {
+      await montar();
+      await clic(botonAria('Editar Cama elástica'));
+      expect(modo('limite')!.checked).toBe(true);
+      await clic(botonActivo('Cancelar'));
+      await clic(botonAria('Editar Pelotero'));
+      expect(modo('atp')!.checked).toBe(true);
+      expect(textoPantalla()).not.toContain('Edad mínima');
+    });
+
+    it('en «Con límite de edad» no se puede dejar todo vacío', async () => {
+      await montar();
+      await clic(botonAria('Editar Cama elástica'));
+      await escribir('Edad mínima', '');
+      await escribir('Edad máxima', '');
+      await clic(botonActivo('Guardar cambios'));
+      expect(textoPantalla()).toContain('Indicá al menos una edad');
+      expect(api.actualizarInstalacion).not.toHaveBeenCalled();
+    });
+
+    it('se puede poner solo la edad mínima, o solo la máxima', async () => {
+      await montar();
+      vi.mocked(api.actualizarInstalacion).mockResolvedValue(PELOTERO);
+      await clic(botonAria('Editar Pelotero'));
+      await clic(modo('limite'));
+      await escribir('Edad mínima', '6');
+      await clic(botonActivo('Guardar cambios'));
+      const cambios = vi.mocked(api.actualizarInstalacion).mock.calls[0][1];
+      expect(cambios.edadMin).toBe(6);
+      expect(cambios.edadMax).toBeUndefined(); // nunca tuvo máxima y no se pidió
     });
 
     it('si nunca tuvo edades y siguen vacías, no se mandan', async () => {

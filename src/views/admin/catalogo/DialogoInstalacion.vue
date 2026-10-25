@@ -18,15 +18,21 @@
             :rules="[importeValido]"
             :disabled="enviando"
           />
-          <v-row>
-            <v-col cols="6">
-              <v-text-field v-model="edadMin" label="Edad mínima" type="number" suffix="años" :rules="[regla.edad]" :disabled="enviando" />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model="edadMax" label="Edad máxima" type="number" suffix="años" :rules="[regla.edad, regla.orden]" :disabled="enviando" />
-            </v-col>
-          </v-row>
-          <p class="text-caption text-medium-emphasis">Dejá las edades en blanco si es para todo el mundo.</p>
+          <v-radio-group v-model="modoEdad" label="¿Para qué edades es?" :disabled="enviando" hide-details class="mb-2">
+            <v-radio value="atp" label="Apto para todo público (ATP)" />
+            <v-radio value="limite" label="Con límite de edad" />
+          </v-radio-group>
+          <template v-if="modoEdad === 'limite'">
+            <v-row>
+              <v-col cols="6">
+                <v-text-field v-model="edadMin" label="Edad mínima" type="number" suffix="años" :rules="[regla.edad, regla.alMenosUna]" :disabled="enviando" />
+              </v-col>
+              <v-col cols="6">
+                <v-text-field v-model="edadMax" label="Edad máxima" type="number" suffix="años" :rules="[regla.edad, regla.orden]" :disabled="enviando" />
+              </v-col>
+            </v-row>
+            <p class="text-caption text-medium-emphasis">Podés indicar solo la mínima, solo la máxima, o las dos.</p>
+          </template>
 
           <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mt-3" role="alert">{{ error }}</v-alert>
           <button type="submit" class="d-none" tabindex="-1" aria-hidden="true">enviar</button>
@@ -63,11 +69,13 @@ const descripcion = ref('');
 const precio = ref('');
 const edadMin = ref('');
 const edadMax = ref('');
+const modoEdad = ref<'atp' | 'limite'>('atp');
 const enviando = ref(false);
 const error = ref('');
 
 const regla = {
   edad: (v: string) => v === '' || v === null || (/^\d+$/.test(String(v).trim()) && Number(v) <= 120) || 'Un número entero entre 0 y 120',
+  alMenosUna: () => edadMin.value !== '' || edadMax.value !== '' || 'Indicá al menos una edad (o elegí «Apto para todo público»)',
   orden: (v: string) =>
     v === '' || edadMin.value === '' || Number(v) >= Number(edadMin.value) || 'No puede ser menor que la edad mínima',
 };
@@ -81,6 +89,7 @@ watch(visible, (abierto) => {
   precio.value = i ? String(Number(i.precio)) : '';
   edadMin.value = i?.edadMin?.toString() ?? '';
   edadMax.value = i?.edadMax?.toString() ?? '';
+  modoEdad.value = i && (i.edadMin !== null || i.edadMax !== null) ? 'limite' : 'atp';
   formulario.value?.resetValidation();
 });
 
@@ -103,8 +112,9 @@ async function enviar() {
       nombre: nombre.value.trim(),
       descripcion: descripcion.value.trim(),
       precio: aNumero(precio.value) ?? 0,
-      edadMin: edad(edadMin.value, i?.edadMin),
-      edadMax: edad(edadMax.value, i?.edadMax),
+      // ATP = sin límites: se envían vacías (null si antes tenían, para QUITARLAS)
+      edadMin: edad(modoEdad.value === 'limite' ? edadMin.value : '', i?.edadMin),
+      edadMax: edad(modoEdad.value === 'limite' ? edadMax.value : '', i?.edadMax),
     };
     if (i) {
       await actualizarInstalacion(i.id, datos);

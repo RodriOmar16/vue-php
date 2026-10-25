@@ -54,6 +54,8 @@ export const routerDePrueba = async (inicial = '/'): Promise<Router> => {
       { path: '/admin/salones', name: 'admin-salones', component: vacio },
       { path: '/admin/salones/:id/horarios', name: 'admin-salon-horarios', component: vacio },
       { path: '/admin/cierres', name: 'admin-bloqueos', component: vacio },
+      { path: '/admin/combos', name: 'admin-combos', component: vacio },
+      { path: '/admin/combos/:id', name: 'admin-combo-detalle', component: vacio },
     ],
   });
   await router.push(inicial);

@@ -58,6 +58,19 @@ const router = createRouter({
           meta: { roles: ['propietario', 'empleado'] },
         },
         {
+          path: 'combos',
+          name: 'admin-combos',
+          component: () => import('@/views/admin/combos/CombosView.vue'),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
+          path: 'combos/:id',
+          name: 'admin-combo-detalle',
+          component: () => import('@/views/admin/combos/ComboDetalleView.vue'),
+          props: (route) => ({ id: Number(route.params.id) }),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
           path: 'catalogo',
           component: () => import('@/views/admin/catalogo/LayoutCatalogo.vue'),
           redirect: { name: 'admin-catalogo-menus' },

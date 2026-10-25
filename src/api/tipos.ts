@@ -250,3 +250,113 @@ export interface DatosServicio {
   precio: number;
   precioPor?: PrecioPor;
 }
+
+// ---------- Combos, tarifas y cotizador ----------
+
+export interface ComboSalon {
+  id: number;
+  nombre: string;
+  inhabilitado: boolean;
+}
+
+/** Opción de menú dentro de un combo: el cliente elige UNA; `recargo` es lo que se suma si esa opción es más cara. */
+export interface ComboMenu {
+  id: number;
+  nombre: string;
+  publico: PublicoMenu;
+  precio: string;
+  precioPor: PrecioPor;
+  inhabilitado: boolean;
+  recargo: string | null;
+}
+
+export interface ComboInstalacion {
+  id: number;
+  nombre: string;
+  precio: string;
+  inhabilitado: boolean;
+}
+
+export interface ComboServicio {
+  id: number;
+  nombre: string;
+  precio: string;
+  precioPor: PrecioPor;
+  inhabilitado: boolean;
+}
+
+export interface Combo {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  /** incluye hasta `maxPersonas` invitados y `cantidadHoras` de duración */
+  precioBase: string;
+  maxPersonas: number;
+  /** por cada invitado que supere maxPersonas */
+  precioAdicionalPersona: string;
+  cantidadHoras: number;
+  precioHoraExtra: string;
+  observaciones: string | null;
+  inhabilitado: boolean;
+  creadoEn: string;
+  actualizadoEn: string;
+  salones: ComboSalon[];
+  menus: ComboMenu[];
+  instalaciones: ComboInstalacion[];
+  servicios: ComboServicio[];
+}
+
+export interface DatosCombo {
+  nombre: string;
+  descripcion?: string;
+  precioBase: number;
+  maxPersonas: number;
+  precioAdicionalPersona?: number;
+  cantidadHoras: number;
+  precioHoraExtra?: number;
+  observaciones?: string;
+  /** Cada lista reemplaza el conjunto completo; omitirla no lo toca */
+  salonIds?: number[];
+  menus?: { menuId: number; recargo?: number }[];
+  instalacionIds?: number[];
+  servicioIds?: number[];
+}
+
+/** Precio especial de un combo por día de la semana, feriado o temporada. */
+export interface Tarifa {
+  id: number;
+  comboId: number;
+  /** null = todos los salones donde se ofrece el combo */
+  salonId: number | null;
+  /** 1 = lunes ... 7 = domingo */
+  diaSemana: number | null;
+  /** YYYY-MM-DD, siempre juntas o ambas null */
+  fechaDesde: string | null;
+  fechaHasta: string | null;
+  precioBase: string;
+  precioAdicionalPersona: string | null;
+  prioridad: number;
+  inhabilitado: boolean;
+}
+
+export interface DatosTarifa {
+  /** null quita la condición (al editar) */
+  salonId?: number | null;
+  diaSemana?: number | null;
+  fechaDesde?: string | null;
+  fechaHasta?: string | null;
+  precioBase: number;
+  precioAdicionalPersona?: number | null;
+  prioridad?: number;
+}
+
+export interface Cotizacion {
+  combo: { id: number; nombre: string };
+  salonId: number;
+  fecha: string;
+  invitados: number;
+  maxPersonas: number;
+  precioBase: { importe: string; origen: 'combo' | 'tarifa'; tarifaId: number | null };
+  excedente: { personas: number; precioPorPersona: string; importe: string };
+  total: string;
+}

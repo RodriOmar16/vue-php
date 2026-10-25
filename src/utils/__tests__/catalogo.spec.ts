@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { sufijoPrecio, textoEdades } from '../catalogo';
 
 describe('textoEdades', () => {
-  it('sin restricción', () => expect(textoEdades(null, null)).toBe('Todas las edades'));
+  it('sin límites es apto para todo público (ATP)', () => expect(textoEdades(null, null)).toBe('Apto para todo público (ATP)'));
   it('rango', () => expect(textoEdades(4, 12)).toBe('De 4 a 12 años'));
   it('solo mínimo o solo máximo', () => {
     expect(textoEdades(6, null)).toBe('Desde 6 años');
