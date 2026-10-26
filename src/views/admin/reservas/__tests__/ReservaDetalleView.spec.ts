@@ -28,7 +28,7 @@ const reserva = (extra: Partial<ReservaDetalleAdmin> = {}): ReservaDetalleAdmin 
     { tipo: 'servicio', descripcion: 'Mozos', cantidad: 1, precioUnitario: '0.00', subtotal: '0.00', incluido: true },
   ],
   total: '1250.00', sena: { porcentaje: '50.00', monto: '625.00' }, pagado: '0.00', saldo: '1250.00',
-  reembolsable: '0.00', reembolsoPendiente: '0.00', reembolsado: '0.00', motivoCancelacion: null,
+  reembolsable: '0.00', reembolsoPendiente: '0.00', reembolsado: '0.00', motivoCancelacion: null, canceladaPor: null,
   pagos: [pago()],
   historial: [
     { accion: 'creada', autor: 'Sistema', detalle: { origen: 'web' }, fecha: '2027-02-01T14:00:00.000Z' },
@@ -401,6 +401,15 @@ describe('ReservaDetalleView', () => {
         motivoCancelacion: 'El cliente se mudó', pagos: [pago({ estado: 'aprobado', tieneComprobante: false, metodo: 'efectivo' }), reembolso()], ...extra,
       });
     const radio = (valor: string) => document.querySelector<HTMLInputElement>(`.v-overlay--active input[type="radio"][value="${valor}"]`);
+
+    it('si canceló el cliente lo dice; si canceló el salón, no', async () => {
+      await montar(cancelada({ canceladaPor: 'cliente', motivoCancelacion: 'Cambiaron los planes' }));
+      expect(wrapper.find('[data-testid="aviso-cancelada"]').text()).toContain('Reserva cancelada por el cliente: Cambiaron los planes');
+      wrapper.unmount();
+      document.body.innerHTML = '';
+      await montar(cancelada({ canceladaPor: 'salon' }));
+      expect(wrapper.find('[data-testid="cancelada-por-cliente"]').exists()).toBe(false);
+    });
 
     it('una reserva cancelada explica el motivo y cuánto falta devolver', async () => {
       await montar(cancelada());

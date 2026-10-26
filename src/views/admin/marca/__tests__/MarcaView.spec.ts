@@ -22,7 +22,7 @@ vi.mock('@/api/marca', async (original) => ({
 const MARCA: MarcaEmpresa = {
   slug: 'los-pinos', nombre: 'Los Pinos', colorPrimario: '#1e3a8a', colorSecundario: null, tituloHero: 'Tu fiesta',
   textoHero: null, sobreNosotros: 'Hace 10 años', direccion: 'Calle 1', telefono: '11 5555', email: 'hola@pinos.com',
-  redes: { instagram: 'https://instagram.com/pinos' }, datosTransferencia: null, logoUrl: null,
+  redes: { instagram: 'https://instagram.com/pinos' }, datosTransferencia: null, politicaCancelacionCliente: 'ninguno', diasLimiteCancelacionCliente: 1, logoUrl: null,
 };
 const marca = (extra: Partial<MarcaEmpresa> = {}): MarcaEmpresa => ({ ...MARCA, ...extra });
 
@@ -65,6 +65,47 @@ describe('MarcaView', () => {
     vi.resetAllMocks();
   });
   afterEach(() => wrapper?.unmount());
+
+  describe('cancelación del cliente', () => {
+    const radio = (valor: string) => document.querySelector<HTMLInputElement>(`input[type="radio"][value="${valor}"]`);
+
+    it('muestra la política guardada: por defecto no se devuelve nada, con 1 día de plazo', async () => {
+      await montar();
+      expect(radio('ninguno')!.checked).toBe(true);
+      expect(campo('Días antes del evento hasta los que puede cancelar').element.value).toBe('1');
+      expect(wrapper.text()).toContain('pendiente');
+    });
+
+    it('envía solo la política cuando solo cambia esa', async () => {
+      await montar();
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca({ politicaCancelacionCliente: 'sena' }));
+      await clic(radio('sena'));
+      await guardar();
+      expect(enviado()).toEqual({ politicaCancelacionCliente: 'sena' });
+    });
+
+    it('envía los días como número, junto con la política si también cambió', async () => {
+      await montar(marca({ politicaCancelacionCliente: 'sena', diasLimiteCancelacionCliente: 2 }));
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca());
+      await clic(radio('todo'));
+      await escribir('Días antes del evento hasta los que puede cancelar', '7');
+      await guardar();
+      expect(enviado()).toEqual({ politicaCancelacionCliente: 'todo', diasLimiteCancelacionCliente: 7 });
+    });
+
+    it.each(['0', '366', '1.5', ''])('rechaza %j como cantidad de días y no envía nada', async (valor) => {
+      await montar();
+      await escribir('Días antes del evento hasta los que puede cancelar', valor);
+      await guardar();
+      expect(api.actualizarMarca).not.toHaveBeenCalled();
+    });
+
+    it('el empleado la ve pero no la puede cambiar', async () => {
+      await montar(marca(), 'empleado');
+      expect(radio('sena')!.disabled).toBe(true);
+      expect(campo('Días antes del evento hasta los que puede cancelar').element.disabled).toBe(true);
+    });
+  });
 
   describe('carga', () => {
     it('muestra lo guardado, la vista previa y el enlace a la página pública', async () => {

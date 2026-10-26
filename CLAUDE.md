@@ -60,3 +60,6 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 ## Cancelaciones y reembolsos (panel)
 - En `ReservaDetalleView`: «Cancelar reserva» (`DialogoCancelarReserva`: motivo + devolver todo / otro importe / nada; deshabilitado con comprobantes sin revisar) y, en reembolsos pendientes, «Ya lo devolví» / «Anular» (`DialogoReembolso`, y `DialogoRechazarPago` con `modo="anular"`). «Registrar un reembolso» acuerda una devolución aparte.
 - Un reembolso pendiente se muestra «Por devolver», nunca «En revisión», y no tiene Aprobar/Rechazar. El inicio y la lista avisan cuántos reembolsos hay por devolver.
+
+## Cancelación del cliente (panel)
+- `/admin/marca` → «Si el cliente cancela su reserva»: política (nada / la seña / todo lo pagado; por defecto nada) y días de plazo (1–365). El detalle de una reserva cancelada por el cliente lo dice («cancelada por el cliente»); el reembolso que corresponda queda «Por devolver» como cualquier otro.

@@ -34,7 +34,7 @@
         </template>
       </v-alert>
       <v-alert v-else-if="reserva.estado === 'cancelada'" type="error" variant="tonal" class="mb-4" data-testid="aviso-cancelada">
-        Reserva cancelada<template v-if="reserva.motivoCancelacion">: {{ reserva.motivoCancelacion }}</template>. El horario volvió a quedar disponible.
+        Reserva cancelada<strong v-if="reserva.canceladaPor === 'cliente'" data-testid="cancelada-por-cliente"> por el cliente</strong><template v-if="reserva.motivoCancelacion">: {{ reserva.motivoCancelacion }}</template>. El horario volvió a quedar disponible.
         <template v-if="Number(reserva.reembolsoPendiente) > 0">
           <strong data-testid="falta-devolver"> Falta devolverle {{ formatearImporte(reserva.reembolsoPendiente) }} al cliente.</strong>
         </template>

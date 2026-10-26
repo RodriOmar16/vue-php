@@ -394,8 +394,14 @@ export interface MarcaEmpresa {
   email: string | null;
   redes: Partial<Record<Red, string>> | null;
   datosTransferencia: DatosTransferencia | null;
+  politicaCancelacionCliente: PoliticaCancelacion;
+  /** hasta cuántos días antes del evento puede cancelar el cliente por su cuenta */
+  diasLimiteCancelacionCliente: number;
   logoUrl: string | null;
 }
+
+/** Qué se le devuelve al cliente si cancela dentro del plazo */
+export type PoliticaCancelacion = 'ninguno' | 'sena' | 'todo';
 
 /** Omitir un campo lo conserva; null lo quita (el nombre no se puede quitar) */
 export interface CambiosMarca {
@@ -410,6 +416,8 @@ export interface CambiosMarca {
   email?: string | null;
   redes?: Partial<Record<Red, string>> | null;
   datosTransferencia?: DatosTransferencia | null;
+  politicaCancelacionCliente?: PoliticaCancelacion;
+  diasLimiteCancelacionCliente?: number;
 }
 
 // ---------- Reservas y pagos (vista del personal) ----------
@@ -533,6 +541,8 @@ export interface ReservaDetalleAdmin {
   reembolsoPendiente: string;
   reembolsado: string;
   motivoCancelacion: string | null;
+  /** quién canceló: el cliente desde su enlace o el salón desde el panel */
+  canceladaPor: 'cliente' | 'salon' | null;
   pagos: PagoReserva[];
   historial: EventoHistorial[];
 }

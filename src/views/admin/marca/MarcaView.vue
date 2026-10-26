@@ -135,6 +135,31 @@
             </v-card-text>
           </v-card>
 
+          <v-card variant="outlined" class="mb-4">
+            <v-card-title class="text-subtitle-1">Si el cliente cancela su reserva</v-card-title>
+            <v-card-text>
+              <p class="text-body-2 text-medium-emphasis mb-3">
+                El cliente puede cancelar desde el enlace de su reserva hasta cierta cantidad de días antes del evento. Pasado ese plazo tiene que comunicarse con vos.
+                Lo que se le devuelve queda <strong>pendiente</strong> hasta que vos confirmes que lo devolviste.
+              </p>
+              <v-radio-group v-model="form.politica" label="¿Qué se le devuelve?" :disabled="!puedeEditar || guardando" hide-details class="mb-3">
+                <v-radio value="ninguno" label="Nada (la seña no se devuelve)" />
+                <v-radio value="sena" label="La seña" />
+                <v-radio value="todo" label="Todo lo que haya pagado" />
+              </v-radio-group>
+              <v-text-field
+                v-model="form.diasLimite"
+                label="Días antes del evento hasta los que puede cancelar"
+                type="number"
+                min="1"
+                max="365"
+                :rules="[requerido, regla.dias]"
+                :disabled="!puedeEditar || guardando"
+                style="max-width: 360px"
+              />
+            </v-card-text>
+          </v-card>
+
           <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3" role="alert">{{ error }}</v-alert>
           <div v-if="puedeEditar" class="d-flex align-center ga-3">
             <v-btn color="primary" variant="flat" type="submit" :loading="guardando" :disabled="!hayCambios">Guardar cambios</v-btn>
@@ -170,7 +195,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import type { VForm } from 'vuetify/components';
 import { ApiError } from '@/api/http';
 import { actualizarMarca, BYTES_MAXIMOS_LOGO, obtenerMarca, quitarLogo, subirLogo, TIPOS_ACEPTADOS_LOGO } from '@/api/marca';
-import { type CambiosMarca, type MarcaEmpresa, REDES, type Red } from '@/api/tipos';
+import { type CambiosMarca, type MarcaEmpresa, type PoliticaCancelacion, REDES, type Red } from '@/api/tipos';
 import { genericosStore } from '@/store/genericos';
 import { useSesionStore } from '@/store/sesion';
 import { COLOR_ACENTO_POR_DEFECTO, COLOR_PRINCIPAL_POR_DEFECTO, colorLegible, colorOPorDefecto, esColorHex } from '@/utils/color';
@@ -216,7 +241,7 @@ const CAMPOS_BANCO: CampoBanco[] = ['titular', 'banco', 'cbu', 'alias', 'cuit', 
 const vacioRedes = () => Object.fromEntries(REDES.map((r) => [r, ''])) as Record<Red, string>;
 const form = reactive({
   nombre: '', tituloHero: '', textoHero: '', sobreNosotros: '', direccion: '', telefono: '', email: '',
-  colorPrimario: '', colorSecundario: '', redes: vacioRedes(),
+  colorPrimario: '', colorSecundario: '', redes: vacioRedes(), politica: 'ninguno' as PoliticaCancelacion, diasLimite: '1',
   banco: { titular: '', banco: '', cbu: '', alias: '', cuit: '', instrucciones: '' } as Record<CampoBanco, string>,
 });
 
@@ -233,6 +258,7 @@ const regla = {
   alias: (v: string) => !v || /^[a-zA-Z0-9.-]{6,20}$/.test(v.trim()) || 'Entre 6 y 20 caracteres: letras, números, punto o guion',
   cuit: (v: string) => !v || /^[0-9]{2}-?[0-9]{8}-?[0-9]$/.test(v.trim()) || 'Un CUIT de 11 números, por ejemplo 30-12345678-9',
   /** si se cargó cualquier dato bancario, el cliente necesita al menos una forma de transferir */
+  dias: (v: string) => (Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 365) || 'Un número entero entre 1 y 365',
   cbuOAlias: () => !hayDatosBancarios.value || !!limpio(form.banco.cbu) || !!limpio(form.banco.alias) || 'Indicá el CBU o el alias',
 };
 
@@ -249,6 +275,8 @@ function rellenar(m: MarcaEmpresa) {
   for (const campo of CAMPOS_TEXTO.filter((c) => c !== 'nombre')) form[campo] = m[campo] ?? '';
   for (const r of REDES) form.redes[r] = m.redes?.[r] ?? '';
   for (const k of CAMPOS_BANCO) form.banco[k] = m.datosTransferencia?.[k] ?? '';
+  form.politica = m.politicaCancelacionCliente;
+  form.diasLimite = String(m.diasLimiteCancelacionCliente);
 }
 
 const limpio = (v: string | null | undefined) => (v ?? '').trim();
@@ -275,6 +303,8 @@ const cambios = computed<CambiosMarca>(() => {
   if (JSON.stringify(bancoNuevo) !== JSON.stringify(bancoLimpio(o.datosTransferencia))) {
     res.datosTransferencia = Object.keys(bancoNuevo).length === 0 ? null : bancoNuevo; // la API reemplaza todos los datos juntos
   }
+  if (form.politica !== o.politicaCancelacionCliente) res.politicaCancelacionCliente = form.politica;
+  if (Number(form.diasLimite) !== o.diasLimiteCancelacionCliente && regla.dias(form.diasLimite) === true) res.diasLimiteCancelacionCliente = Number(form.diasLimite);
   return res as CambiosMarca;
 });
 const hayCambios = computed(() => Object.keys(cambios.value).length > 0);
