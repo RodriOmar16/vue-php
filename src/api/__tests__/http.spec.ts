@@ -77,6 +77,22 @@ describe('ClienteHttp', () => {
     expect(init.headers.Authorization).toBe('Bearer TOKEN');
   });
 
+  it('descargar() trae un archivo con el token; si falla, el error sigue el mismo camino que el resto', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response('contenido-binario', { status: 200, headers: { 'Content-Type': 'application/pdf' } }))
+      .mockResolvedValueOnce(respuesta(404, { message: 'No se encontró' }));
+    const http = crear(fetchMock);
+
+    const archivo = await http.descargar('/admin/pagos/1/comprobante');
+    expect(await archivo.text()).toBe('contenido-binario');
+    expect(archivo.type).toBe('application/pdf');
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer TOKEN');
+    expect(fetchMock.mock.calls[0][1].headers.Accept).toBe('*/*');
+
+    const error = await fallo(http.descargar('/admin/pagos/2/comprobante'));
+    expect(error.status).toBe(404);
+  });
+
   it('no envía el token en rutas no autenticadas ni si no hay token', async () => {
     // una Response nueva por llamada: su cuerpo solo se puede leer una vez
     const fetchMock = vi.fn().mockImplementation(async () => respuesta(200, {}));

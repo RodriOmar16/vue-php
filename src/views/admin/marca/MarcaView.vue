@@ -105,6 +105,36 @@
             </v-card-text>
           </v-card>
 
+          <v-card variant="outlined" class="mb-4">
+            <v-card-title class="text-subtitle-1">Cobro de la seña por transferencia</v-card-title>
+            <v-card-text>
+              <p class="text-body-2 text-medium-emphasis mb-3">
+                Tus clientes ven estos datos al reservar para transferir la seña. Después te mandan el comprobante y vos lo aprobás desde Reservas.
+                Hace falta al menos el CBU o el alias.
+              </p>
+              <v-row dense>
+                <v-col cols="12" sm="6"><v-text-field v-model="form.banco.titular" label="Titular de la cuenta" :rules="[maximo(100)]" :disabled="!puedeEditar || guardando" /></v-col>
+                <v-col cols="12" sm="6"><v-text-field v-model="form.banco.banco" label="Banco" :rules="[maximo(60)]" :disabled="!puedeEditar || guardando" /></v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field v-model="form.banco.cbu" label="CBU o CVU" inputmode="numeric" counter="22" :rules="[regla.cbu, regla.cbuOAlias]" :disabled="!puedeEditar || guardando" />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field v-model="form.banco.alias" label="Alias" :rules="[regla.alias]" :disabled="!puedeEditar || guardando" />
+                </v-col>
+                <v-col cols="12" sm="6"><v-text-field v-model="form.banco.cuit" label="CUIT / CUIL (opcional)" :rules="[regla.cuit]" :disabled="!puedeEditar || guardando" /></v-col>
+              </v-row>
+              <v-textarea
+                v-model="form.banco.instrucciones"
+                label="Instrucciones para el cliente (opcional)"
+                placeholder="Ej.: Transferí la seña y subí el comprobante desde la página de tu reserva."
+                rows="2"
+                auto-grow
+                :rules="[maximo(500)]"
+                :disabled="!puedeEditar || guardando"
+              />
+            </v-card-text>
+          </v-card>
+
           <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3" role="alert">{{ error }}</v-alert>
           <div v-if="puedeEditar" class="d-flex align-center ga-3">
             <v-btn color="primary" variant="flat" type="submit" :loading="guardando" :disabled="!hayCambios">Guardar cambios</v-btn>
@@ -180,10 +210,14 @@ const errorLogo = ref('');
 type CampoTexto = 'nombre' | 'tituloHero' | 'textoHero' | 'sobreNosotros' | 'direccion' | 'telefono' | 'email' | 'colorPrimario' | 'colorSecundario';
 const CAMPOS_TEXTO: CampoTexto[] = ['nombre', 'tituloHero', 'textoHero', 'sobreNosotros', 'direccion', 'telefono', 'email', 'colorPrimario', 'colorSecundario'];
 
+type CampoBanco = 'titular' | 'banco' | 'cbu' | 'alias' | 'cuit' | 'instrucciones';
+const CAMPOS_BANCO: CampoBanco[] = ['titular', 'banco', 'cbu', 'alias', 'cuit', 'instrucciones'];
+
 const vacioRedes = () => Object.fromEntries(REDES.map((r) => [r, ''])) as Record<Red, string>;
 const form = reactive({
   nombre: '', tituloHero: '', textoHero: '', sobreNosotros: '', direccion: '', telefono: '', email: '',
   colorPrimario: '', colorSecundario: '', redes: vacioRedes(),
+  banco: { titular: '', banco: '', cbu: '', alias: '', cuit: '', instrucciones: '' } as Record<CampoBanco, string>,
 });
 
 const coloresCampos = [
@@ -195,6 +229,11 @@ const regla = {
   color: (v: string | null) => !v || esColorHex(v.trim()) || 'Un color de 6 dígitos, por ejemplo #7c3aed',
   email: (v: string) => !v || email(v),
   url: (v: string) => !v || /^https?:\/\/\S+\.\S+/.test(v.trim()) || 'Un enlace que empiece con https://',
+  cbu: (v: string) => !v || /^[0-9]{22}$/.test(v.trim()) || 'El CBU o CVU tiene 22 números',
+  alias: (v: string) => !v || /^[a-zA-Z0-9.-]{6,20}$/.test(v.trim()) || 'Entre 6 y 20 caracteres: letras, números, punto o guion',
+  cuit: (v: string) => !v || /^[0-9]{2}-?[0-9]{8}-?[0-9]$/.test(v.trim()) || 'Un CUIT de 11 números, por ejemplo 30-12345678-9',
+  /** si se cargó cualquier dato bancario, el cliente necesita al menos una forma de transferir */
+  cbuOAlias: () => !hayDatosBancarios.value || !!limpio(form.banco.cbu) || !!limpio(form.banco.alias) || 'Indicá el CBU o el alias',
 };
 
 const alElegirColor = (campo: 'colorPrimario' | 'colorSecundario', evento: Event) => {
@@ -209,9 +248,13 @@ function rellenar(m: MarcaEmpresa) {
   form.nombre = m.nombre;
   for (const campo of CAMPOS_TEXTO.filter((c) => c !== 'nombre')) form[campo] = m[campo] ?? '';
   for (const r of REDES) form.redes[r] = m.redes?.[r] ?? '';
+  for (const k of CAMPOS_BANCO) form.banco[k] = m.datosTransferencia?.[k] ?? '';
 }
 
 const limpio = (v: string | null | undefined) => (v ?? '').trim();
+const hayDatosBancarios = computed(() => CAMPOS_BANCO.some((k) => limpio(form.banco[k]) !== ''));
+const bancoLimpio = (datos: Partial<Record<CampoBanco, string>> | null | undefined) =>
+  Object.fromEntries(CAMPOS_BANCO.map((k) => [k, limpio(datos?.[k])]).filter(([, v]) => v !== ''));
 
 /** Sólo lo que cambió: lo vaciado se manda como null (la API lo interpreta como «quitar»). */
 const cambios = computed<CambiosMarca>(() => {
@@ -227,6 +270,10 @@ const cambios = computed<CambiosMarca>(() => {
   const redesAntes = Object.fromEntries(REDES.map((r) => [r, limpio(o.redes?.[r])]).filter(([, url]) => url !== ''));
   if (JSON.stringify(redesNuevas) !== JSON.stringify(redesAntes)) {
     res.redes = Object.keys(redesNuevas).length === 0 ? null : redesNuevas; // la API reemplaza todas las redes juntas
+  }
+  const bancoNuevo = bancoLimpio(form.banco);
+  if (JSON.stringify(bancoNuevo) !== JSON.stringify(bancoLimpio(o.datosTransferencia))) {
+    res.datosTransferencia = Object.keys(bancoNuevo).length === 0 ? null : bancoNuevo; // la API reemplaza todos los datos juntos
   }
   return res as CambiosMarca;
 });

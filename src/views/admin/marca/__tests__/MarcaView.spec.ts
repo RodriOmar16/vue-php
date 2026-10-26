@@ -22,7 +22,7 @@ vi.mock('@/api/marca', async (original) => ({
 const MARCA: MarcaEmpresa = {
   slug: 'los-pinos', nombre: 'Los Pinos', colorPrimario: '#1e3a8a', colorSecundario: null, tituloHero: 'Tu fiesta',
   textoHero: null, sobreNosotros: 'Hace 10 años', direccion: 'Calle 1', telefono: '11 5555', email: 'hola@pinos.com',
-  redes: { instagram: 'https://instagram.com/pinos' }, logoUrl: null,
+  redes: { instagram: 'https://instagram.com/pinos' }, datosTransferencia: null, logoUrl: null,
 };
 const marca = (extra: Partial<MarcaEmpresa> = {}): MarcaEmpresa => ({ ...MARCA, ...extra });
 
@@ -164,6 +164,73 @@ describe('MarcaView', () => {
       expect(campo('Nombre comercial').element.value).toBe('Los Pinos');
       expect(campo('Instagram').element.value).toBe('https://instagram.com/pinos');
       expect(wrapper.find('[data-testid="sin-guardar"]').exists()).toBe(false);
+    });
+  });
+
+  describe('cobro de la seña por transferencia', () => {
+    const BANCO = { titular: 'Los Pinos SRL', banco: 'Banco Provincia', cbu: '0140000000000000000001', alias: 'los.pinos' };
+
+    it('muestra los datos guardados', async () => {
+      await montar(marca({ datosTransferencia: BANCO }));
+      expect(campo('Titular de la cuenta').element.value).toBe('Los Pinos SRL');
+      expect(campo('Banco').element.value).toBe('Banco Provincia');
+      expect(campo('CBU o CVU').element.value).toBe('0140000000000000000001');
+      expect(campo('Alias').element.value).toBe('los.pinos');
+      expect(campo('CUIT / CUIL (opcional)').element.value).toBe('');
+    });
+
+    it('al cargarlos por primera vez envía todos juntos, sin espacios sobrantes ni campos vacíos', async () => {
+      await montar();
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca({ datosTransferencia: BANCO }));
+      await escribir('Titular de la cuenta', '  Los Pinos SRL ');
+      await escribir('Alias', 'los.pinos');
+      await guardar();
+      expect(enviado()).toEqual({ datosTransferencia: { titular: 'Los Pinos SRL', alias: 'los.pinos' } });
+    });
+
+    it('si cambia un solo dato, igualmente se envía el conjunto completo (la API los reemplaza juntos)', async () => {
+      await montar(marca({ datosTransferencia: BANCO }));
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca({ datosTransferencia: { ...BANCO, alias: 'nuevo.alias' } }));
+      await escribir('Alias', 'nuevo.alias');
+      await guardar();
+      expect(enviado()).toEqual({ datosTransferencia: { ...BANCO, alias: 'nuevo.alias' } });
+    });
+
+    it('vaciar todos los datos los QUITA (null)', async () => {
+      await montar(marca({ datosTransferencia: { alias: 'los.pinos' } }));
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca());
+      await escribir('Alias', '');
+      await guardar();
+      expect(enviado()).toEqual({ datosTransferencia: null });
+    });
+
+    it.each([
+      ['CBU o CVU', '123', 'tiene 22 números'],
+      ['CBU o CVU', '01400000000000000000ab', 'tiene 22 números'],
+      ['Alias', 'a', 'Entre 6 y 20 caracteres'],
+      ['Alias', 'tiene espacios', 'Entre 6 y 20 caracteres'],
+      ['CUIT / CUIL (opcional)', '123', 'CUIT de 11 números'],
+    ])('%s = «%s» no se acepta', async (etiqueta, valor, mensaje) => {
+      await montar();
+      await escribir('Alias', 'alias.valido');
+      await escribir(etiqueta, valor);
+      await guardar();
+      expect(document.body.textContent).toContain(mensaje);
+      expect(api.actualizarMarca).not.toHaveBeenCalled();
+    });
+
+    it('si se carga cualquier dato bancario, hace falta el CBU o el alias', async () => {
+      await montar();
+      await escribir('Titular de la cuenta', 'Los Pinos SRL');
+      await guardar();
+      expect(document.body.textContent).toContain('Indicá el CBU o el alias');
+      expect(api.actualizarMarca).not.toHaveBeenCalled();
+    });
+
+    it('el empleado los ve pero no los puede editar', async () => {
+      await montar(marca({ datosTransferencia: BANCO }), 'empleado');
+      expect(campo('Alias').element.disabled).toBe(true);
+      expect(campo('Alias').element.value).toBe('los.pinos');
     });
   });
 

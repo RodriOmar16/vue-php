@@ -85,10 +85,16 @@ export class ClienteHttp {
     return this.pedir<T>('DELETE', ruta, opciones);
   }
 
+  /** Descarga un archivo (por ejemplo un comprobante) con la sesión iniciada: los privados no tienen dirección pública. */
+  descargar(ruta: string, opciones?: Omit<OpcionesPedido, 'cuerpo'>) {
+    return this.pedir<Blob>('GET', ruta, opciones, 'archivo');
+  }
+
   async pedir<T>(
     metodo: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     ruta: string,
     { cuerpo, query, autenticado = true }: OpcionesPedido = {},
+    formato: 'json' | 'archivo' = 'json',
   ): Promise<T> {
     const { baseUrl, obtenerToken, fetchImpl = fetch } = this.opciones;
 
@@ -101,7 +107,7 @@ export class ClienteHttp {
     const qs = parametros.toString();
     const url = `${baseUrl.replace(/\/+$/, '')}${ruta}${qs ? `?${qs}` : ''}`;
 
-    const cabeceras: Record<string, string> = { Accept: 'application/json' };
+    const cabeceras: Record<string, string> = { Accept: formato === 'archivo' ? '*/*' : 'application/json' };
     const esFormulario = typeof FormData !== 'undefined' && cuerpo instanceof FormData;
     // con FormData el navegador fija el Content-Type (con el boundary) por su cuenta
     if (cuerpo !== undefined && !esFormulario) cabeceras['Content-Type'] = 'application/json';
@@ -121,6 +127,7 @@ export class ClienteHttp {
 
     if (respuesta.ok) {
       if (respuesta.status === 204) return undefined as T;
+      if (formato === 'archivo') return (await respuesta.blob()) as T;
       return (await respuesta.json()) as T;
     }
 

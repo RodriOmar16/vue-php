@@ -58,6 +58,19 @@ const router = createRouter({
           meta: { roles: ['propietario', 'empleado'] },
         },
         {
+          path: 'reservas',
+          name: 'admin-reservas',
+          component: () => import('@/views/admin/reservas/ReservasView.vue'),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
+          path: 'reservas/:id',
+          name: 'admin-reserva-detalle',
+          component: () => import('@/views/admin/reservas/ReservaDetalleView.vue'),
+          props: true,
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
           path: 'marca',
           name: 'admin-marca',
           component: () => import('@/views/admin/marca/MarcaView.vue'),

@@ -393,6 +393,7 @@ export interface MarcaEmpresa {
   telefono: string | null;
   email: string | null;
   redes: Partial<Record<Red, string>> | null;
+  datosTransferencia: DatosTransferencia | null;
   logoUrl: string | null;
 }
 
@@ -408,4 +409,145 @@ export interface CambiosMarca {
   telefono?: string | null;
   email?: string | null;
   redes?: Partial<Record<Red, string>> | null;
+  datosTransferencia?: DatosTransferencia | null;
+}
+
+// ---------- Reservas y pagos (vista del personal) ----------
+
+export type EstadoReserva = 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'expirada';
+
+export const ETIQUETA_ESTADO_RESERVA: Record<EstadoReserva, string> = {
+  pendiente: 'Esperando la seña',
+  confirmada: 'Confirmada',
+  completada: 'Realizada',
+  cancelada: 'Cancelada',
+  expirada: 'Vencida',
+};
+
+/** Colores de Vuetify para la insignia de cada estado */
+export const COLOR_ESTADO_RESERVA: Record<EstadoReserva, string> = {
+  pendiente: 'warning',
+  confirmada: 'success',
+  completada: 'secondary',
+  cancelada: 'error',
+  expirada: 'secondary',
+};
+
+export interface ReservaListada {
+  id: string;
+  estado: EstadoReserva;
+  /** Fecha local del evento (YYYY-MM-DD) y horas locales */
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
+  salon: { id: number; nombre: string };
+  combo: string;
+  cliente: { nombre: string; dni: string };
+  invitados: number;
+  total: string;
+  pagado: string;
+  saldo: string;
+  /** Comprobantes que el salón todavía no aprobó ni rechazó */
+  pagosEnRevision: number;
+}
+
+export interface PaginaReservas {
+  total: number;
+  pagina: number;
+  limite: number;
+  items: ReservaListada[];
+}
+
+export interface FiltroReservas {
+  estado?: EstadoReserva;
+  desde?: string;
+  hasta?: string;
+  salonId?: number;
+  q?: string;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface ResumenReservas {
+  comprobantesPorRevisar: number;
+  esperandoSena: number;
+  proximas: number;
+}
+
+export type EstadoPago = 'pendiente' | 'aprobado' | 'rechazado';
+
+export interface PagoReserva {
+  id: string;
+  monto: string;
+  tipo: 'sena' | 'saldo' | 'reembolso';
+  metodo: 'pasarela' | 'transferencia' | 'efectivo';
+  estado: EstadoPago;
+  fecha: string;
+  tieneComprobante: boolean;
+  validadoPor: string | null;
+  motivoRechazo: string | null;
+}
+
+export interface EventoHistorial {
+  accion: string;
+  autor: string;
+  detalle: Record<string, unknown> | null;
+  fecha: string;
+}
+
+export interface LineaReserva {
+  tipo: string;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: string;
+  subtotal: string;
+  incluido: boolean;
+}
+
+export interface ReservaDetalleAdmin {
+  id: string;
+  estado: EstadoReserva;
+  creadaEn: string;
+  expiraEn: string | null;
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
+  finDiaSiguiente: boolean;
+  salon: { id: number; nombre: string };
+  combo: { id: number; nombre: string };
+  cliente: { id: number; nombre: string; dni: string; email: string | null; telefono: string | null; tieneCuenta: boolean };
+  invitados: number;
+  festejado: { nombre: string | null; edad: number | null } | null;
+  observaciones: string | null;
+  lineas: LineaReserva[];
+  total: string;
+  sena: { porcentaje: string; monto: string };
+  pagado: string;
+  saldo: string;
+  pagos: PagoReserva[];
+  historial: EventoHistorial[];
+}
+
+export interface DatosNuevoPago {
+  monto: number;
+  tipo: 'sena' | 'saldo';
+  metodo: 'efectivo' | 'transferencia';
+}
+
+export interface ResultadoPago {
+  pagoId?: string;
+  reservaId: string;
+  estado: EstadoReserva;
+  pagado: string;
+  saldo: string;
+}
+
+/** Cómo cobra la empresa la seña por transferencia (lo ve el cliente al ir a pagar) */
+export interface DatosTransferencia {
+  titular?: string;
+  banco?: string;
+  cbu?: string;
+  alias?: string;
+  cuit?: string;
+  instrucciones?: string;
 }
