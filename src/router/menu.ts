@@ -16,6 +16,7 @@ export interface ItemMenu {
 export const ITEMS_MENU: ItemMenu[] = [
   { titulo: 'Inicio', icono: 'fa-solid fa-house', to: { name: 'admin-inicio' } },
   { titulo: 'Reservas', icono: 'fa-solid fa-calendar-check', to: { name: 'admin-reservas' }, roles: ['propietario', 'empleado'] },
+  { titulo: 'Calendario', icono: 'fa-solid fa-calendar-days', to: { name: 'admin-calendario' }, roles: ['propietario', 'empleado'] },
   { titulo: 'Salones', icono: 'fa-solid fa-champagne-glasses', to: { name: 'admin-salones' }, roles: ['propietario', 'empleado'] },
   { titulo: 'Catálogo', icono: 'fa-solid fa-book-open', to: { name: 'admin-catalogo-menus' }, roles: ['propietario', 'empleado'] },
   { titulo: 'Combos', icono: 'fa-solid fa-gift', to: { name: 'admin-combos' }, roles: ['propietario', 'empleado'] },

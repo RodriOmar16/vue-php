@@ -58,6 +58,12 @@ const router = createRouter({
           meta: { roles: ['propietario', 'empleado'] },
         },
         {
+          path: 'calendario',
+          name: 'admin-calendario',
+          component: () => import('@/views/admin/reservas/CalendarioView.vue'),
+          meta: { roles: ['propietario', 'empleado'] },
+        },
+        {
           path: 'reservas',
           name: 'admin-reservas',
           component: () => import('@/views/admin/reservas/ReservasView.vue'),
