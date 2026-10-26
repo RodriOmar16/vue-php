@@ -15,5 +15,5 @@ export const slugificar = (texto: string): string =>
 export const SLUG_VALIDO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /** Slugs que la API reserva porque chocarían con rutas del sitio. */
-export const SLUGS_RESERVADOS = ['admin', 'api', 'docs', 'plataforma', 'login', 'cliente', 'public', 'www', 'static', 'assets', 'reservar', 'reservas', 'mi-cuenta', 'cuenta', 'lugares'];
+export const SLUGS_RESERVADOS = ['admin', 'api', 'docs', 'plataforma', 'login', 'cliente', 'public', 'www', 'static', 'assets', 'reservar', 'reserva', 'reservas', 'mi-cuenta', 'cuenta', 'lugares'];
 
