@@ -375,3 +375,37 @@ export interface Medio {
   mime: string;
   bytes: number;
 }
+
+// ---------- Marca de la empresa (lo que muestra el sitio público) ----------
+
+export const REDES = ['instagram', 'facebook', 'tiktok', 'youtube', 'whatsapp', 'web'] as const;
+export type Red = (typeof REDES)[number];
+
+export interface MarcaEmpresa {
+  slug: string;
+  nombre: string;
+  colorPrimario: string | null;
+  colorSecundario: string | null;
+  tituloHero: string | null;
+  textoHero: string | null;
+  sobreNosotros: string | null;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
+  redes: Partial<Record<Red, string>> | null;
+  logoUrl: string | null;
+}
+
+/** Omitir un campo lo conserva; null lo quita (el nombre no se puede quitar) */
+export interface CambiosMarca {
+  nombre?: string;
+  colorPrimario?: string | null;
+  colorSecundario?: string | null;
+  tituloHero?: string | null;
+  textoHero?: string | null;
+  sobreNosotros?: string | null;
+  direccion?: string | null;
+  telefono?: string | null;
+  email?: string | null;
+  redes?: Partial<Record<Red, string>> | null;
+}

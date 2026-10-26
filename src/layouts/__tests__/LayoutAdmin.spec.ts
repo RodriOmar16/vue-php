@@ -41,6 +41,7 @@ async function montar(usuario: Perfil) {
           { path: 'cierres', name: 'admin-bloqueos', component: vacio },
           { path: 'catalogo/menus', name: 'admin-catalogo-menus', component: vacio },
           { path: 'combos', name: 'admin-combos', component: vacio },
+          { path: 'marca', name: 'admin-marca', component: vacio },
         ],
       },
     ],

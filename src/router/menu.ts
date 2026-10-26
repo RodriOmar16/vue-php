@@ -19,6 +19,7 @@ export const ITEMS_MENU: ItemMenu[] = [
   { titulo: 'Catálogo', icono: 'fa-solid fa-book-open', to: { name: 'admin-catalogo-menus' }, roles: ['propietario', 'empleado'] },
   { titulo: 'Combos', icono: 'fa-solid fa-gift', to: { name: 'admin-combos' }, roles: ['propietario', 'empleado'] },
   { titulo: 'Cierres', icono: 'fa-solid fa-calendar-xmark', to: { name: 'admin-bloqueos' }, roles: ['propietario', 'empleado'] },
+  { titulo: 'Marca', icono: 'fa-solid fa-palette', to: { name: 'admin-marca' }, roles: ['propietario'] },
   { titulo: 'Equipo', icono: 'fa-solid fa-users', to: { name: 'admin-equipo' }, roles: ['propietario'] },
   {
     titulo: 'Empresas',

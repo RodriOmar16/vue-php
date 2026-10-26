@@ -58,6 +58,12 @@ const router = createRouter({
           meta: { roles: ['propietario', 'empleado'] },
         },
         {
+          path: 'marca',
+          name: 'admin-marca',
+          component: () => import('@/views/admin/marca/MarcaView.vue'),
+          meta: { roles: ['propietario'] },
+        },
+        {
           path: 'combos',
           name: 'admin-combos',
           component: () => import('@/views/admin/combos/CombosView.vue'),

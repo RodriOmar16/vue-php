@@ -51,5 +51,6 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 4. ~~Salones, franjas horarias y bloqueos~~ (hecha: `/admin/salones`, `/admin/salones/:id/horarios`, `/admin/cierres`; el empleado solo consulta)
 5. ~~Catálogos: alimentos, menús, instalaciones, servicios~~ (hecha: `/admin/catalogo/{menus,alimentos,instalaciones,servicios}`; el empleado solo consulta)
 6. ~~Combos: tarifas y cotizador~~ (hecha: `/admin/combos` y `/admin/combos/:id` con tarifas y «Probar el precio»; el empleado solo consulta. Instalaciones: «Apto para todo público (ATP)» o «Con límite de edad»)
+6b. ~~Marca (dueño)~~ (hecha: `/admin/marca`; logo, colores, textos de portada, contacto y redes con vista previa; es lo que muestra el sitio público de `sitio-reservas`. `VITE_SITIO_URL` apunta al sitio para el botón «Ver mi página»)
 7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO). El sitio público podría ser un proyecto Nuxt aparte (decisión pendiente, ver CLAUDE.md de la API); el cliente ve «Mi cuenta», no «Usuarios».
 - Deuda: bundle de ~680 kB (Vuetify completo; usar `vite-plugin-vuetify`), actualizaciones mayores de dependencias (vite 8, vuetify 4, pinia 4, vue-router 5), `FechaPicker` y utilidades aún en JS.
