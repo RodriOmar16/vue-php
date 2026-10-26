@@ -33,14 +33,14 @@ describe('AdminInicio', () => {
   afterEach(() => wrapper?.unmount());
 
   it('saluda con el nombre, el rol y la empresa', async () => {
-    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0 });
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0, reembolsosPendientes: 0 });
     await montar();
     expect(wrapper.text()).toContain('Hola, María');
     expect(wrapper.text()).toContain('Demo');
   });
 
   it('muestra lo que hay para atender, y resalta los comprobantes por revisar', async () => {
-    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 3, esperandoSena: 1, proximas: 2 });
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 3, esperandoSena: 1, proximas: 2, reembolsosPendientes: 0 });
     await montar();
     expect(wrapper.find('[data-testid="tarjeta-comprobantes"]').text()).toContain('3');
     expect(wrapper.find('[data-testid="tarjeta-comprobantes"]').text()).toContain('comprobantes para revisar');
@@ -49,14 +49,30 @@ describe('AdminInicio', () => {
     expect(wrapper.find('[data-testid="tarjeta-proximas"]').text()).toMatch(/2\s*eventos confirmados próximos/);
   });
 
+  it('avisa del dinero que hay que devolver, y solo cuando lo hay', async () => {
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0, reembolsosPendientes: 2 });
+    await montar();
+    expect(wrapper.find('[data-testid="tarjeta-reembolsos"]').text()).toMatch(/2\s*reembolsos por devolver/);
+    wrapper.unmount();
+    document.body.innerHTML = '';
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0, reembolsosPendientes: 1 });
+    await montar();
+    expect(wrapper.find('[data-testid="tarjeta-reembolsos"]').text()).toMatch(/1\s*reembolso por devolver/);
+    wrapper.unmount();
+    document.body.innerHTML = '';
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0, reembolsosPendientes: 0 });
+    await montar();
+    expect(wrapper.find('[data-testid="tarjeta-reembolsos"]').exists()).toBe(false);
+  });
+
   it('en singular dice «comprobante»', async () => {
-    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 1, esperandoSena: 0, proximas: 0 });
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 1, esperandoSena: 0, proximas: 0, reembolsosPendientes: 0 });
     await montar();
     expect(wrapper.find('[data-testid="tarjeta-comprobantes"]').text()).toContain('1comprobante para revisar');
   });
 
   it('el empleado también lo ve; el superadmin no (no tiene salón) y ni siquiera lo consulta', async () => {
-    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0 });
+    vi.mocked(api.resumenReservas).mockResolvedValue({ comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0, reembolsosPendientes: 0 });
     await montar('empleado');
     expect(wrapper.find('[data-testid="tarjeta-comprobantes"]').exists()).toBe(true);
     wrapper.unmount();

@@ -9,7 +9,7 @@
 
     <!-- Lo que hay para atender (solo personal de un salón) -->
     <template v-if="resumen">
-      <v-col cols="12" sm="4">
+      <v-col cols="12" sm="6" :md="resumen.reembolsosPendientes > 0 ? 3 : 4">
         <v-card :to="{ name: 'admin-reservas' }" :color="resumen.comprobantesPorRevisar > 0 ? 'warning' : undefined" :variant="resumen.comprobantesPorRevisar > 0 ? 'tonal' : 'outlined'" data-testid="tarjeta-comprobantes">
           <v-card-text>
             <div class="text-h4">{{ resumen.comprobantesPorRevisar }}</div>
@@ -17,7 +17,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" sm="4">
+      <v-col cols="12" sm="6" :md="resumen.reembolsosPendientes > 0 ? 3 : 4">
         <v-card :to="{ name: 'admin-reservas' }" variant="outlined" data-testid="tarjeta-esperando">
           <v-card-text>
             <div class="text-h4">{{ resumen.esperandoSena }}</div>
@@ -25,11 +25,19 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" sm="4">
+      <v-col cols="12" sm="6" :md="resumen.reembolsosPendientes > 0 ? 3 : 4">
         <v-card :to="{ name: 'admin-reservas' }" variant="outlined" data-testid="tarjeta-proximas">
           <v-card-text>
             <div class="text-h4">{{ resumen.proximas }}</div>
             <div>{{ resumen.proximas === 1 ? 'evento confirmado próximo' : 'eventos confirmados próximos' }}</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col v-if="resumen.reembolsosPendientes > 0" cols="12" sm="6" md="3">
+        <v-card :to="{ name: 'admin-reservas' }" color="error" variant="tonal" data-testid="tarjeta-reembolsos">
+          <v-card-text>
+            <div class="text-h4">{{ resumen.reembolsosPendientes }}</div>
+            <div>{{ resumen.reembolsosPendientes === 1 ? 'reembolso por devolver' : 'reembolsos por devolver' }}</div>
           </v-card-text>
         </v-card>
       </v-col>

@@ -1,16 +1,19 @@
 <template>
   <v-dialog v-model="visible" max-width="520" :persistent="enviando">
     <v-card>
-      <v-card-title>Rechazar el comprobante</v-card-title>
+      <v-card-title>{{ anulando ? 'Anular el reembolso' : 'Rechazar el comprobante' }}</v-card-title>
       <v-card-text>
-        <p class="text-body-2 text-medium-emphasis mb-3">
+        <p v-if="anulando" class="text-body-2 text-medium-emphasis mb-3">
+          El reembolso deja de estar pendiente y ese dinero vuelve a quedar disponible por si querés acordar otra devolución. Queda registrado en el historial.
+        </p>
+        <p v-else class="text-body-2 text-medium-emphasis mb-3">
           El cliente va a ver este motivo y va a poder enviar otro comprobante. Mientras no haya otro en revisión, su horario se sostiene un rato más.
         </p>
         <v-form ref="formulario" @submit.prevent="enviar">
           <v-textarea
             v-model="motivo"
             label="Motivo"
-            placeholder="Ej.: El importe no coincide con la seña / La foto no se lee"
+            :placeholder="anulando ? 'Ej.: Lo cargué con un importe equivocado' : 'Ej.: El importe no coincide con la seña / La foto no se lee'"
             rows="3"
             auto-grow
             counter="300"
@@ -24,7 +27,7 @@
       </v-card-text>
       <v-card-actions class="justify-end">
         <v-btn variant="text" :disabled="enviando" @click="visible = false">Cancelar</v-btn>
-        <v-btn color="error" variant="flat" :loading="enviando" @click="enviar">Rechazar comprobante</v-btn>
+        <v-btn color="error" variant="flat" :loading="enviando" @click="enviar">{{ anulando ? 'Anular reembolso' : 'Rechazar comprobante' }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -34,10 +37,10 @@
 import { computed, ref, watch } from 'vue';
 import type { VForm } from 'vuetify/components';
 import { ApiError } from '@/api/http';
-import { rechazarPago } from '@/api/reservas';
+import { anularReembolso, rechazarPago } from '@/api/reservas';
 import { maximo, requerido } from '@/utils/reglas';
 
-const props = defineProps<{ modelValue: boolean; pagoId: string | null }>();
+const props = defineProps<{ modelValue: boolean; pagoId: string | null; modo?: 'rechazar' | 'anular' }>();
 const emit = defineEmits<{ 'update:modelValue': [valor: boolean]; hecho: [] }>();
 
 const visible = computed({
@@ -45,6 +48,7 @@ const visible = computed({
   set: (valor: boolean) => emit('update:modelValue', valor),
 });
 
+const anulando = computed(() => props.modo === 'anular');
 const formulario = ref<InstanceType<typeof VForm> | null>(null);
 const motivo = ref('');
 const enviando = ref(false);
@@ -64,7 +68,7 @@ async function enviar() {
   if (!validacion?.valid || !props.pagoId) return;
   enviando.value = true;
   try {
-    await rechazarPago(props.pagoId, motivo.value.trim());
+    await (anulando.value ? anularReembolso : rechazarPago)(props.pagoId, motivo.value.trim());
     visible.value = false;
     emit('hecho');
   } catch (e) {

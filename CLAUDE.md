@@ -55,3 +55,7 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 6c. ~~Reservas y pagos~~ (hecha: `/admin/reservas` con filtros y paginación en el servidor, `/admin/reservas/:id` con cliente, líneas, pagos e historial; ver el comprobante (se descarga con la sesión: no tiene URL pública), aprobar, rechazar con motivo, registrar un pago en efectivo/transferencia y copiar el enlace para el cliente. El inicio muestra «N comprobantes para revisar». Dueño y empleado)
 7. Reservas y sitio público (cuando la API los tenga) · fotos (MinIO). El sitio público podría ser un proyecto Nuxt aparte (decisión pendiente, ver CLAUDE.md de la API); el cliente ve «Mi cuenta», no «Usuarios».
 - Deuda: bundle de ~680 kB (Vuetify completo; usar `vite-plugin-vuetify`), actualizaciones mayores de dependencias (vite 8, vuetify 4, pinia 4, vue-router 5), `FechaPicker` y utilidades aún en JS.
+
+## Cancelaciones y reembolsos (panel)
+- En `ReservaDetalleView`: «Cancelar reserva» (`DialogoCancelarReserva`: motivo + devolver todo / otro importe / nada; deshabilitado con comprobantes sin revisar) y, en reembolsos pendientes, «Ya lo devolví» / «Anular» (`DialogoReembolso`, y `DialogoRechazarPago` con `modo="anular"`). «Registrar un reembolso» acuerda una devolución aparte.
+- Un reembolso pendiente se muestra «Por devolver», nunca «En revisión», y no tiene Aprobar/Rechazar. El inicio y la lista avisan cuántos reembolsos hay por devolver.

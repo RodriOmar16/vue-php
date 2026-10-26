@@ -10,6 +10,11 @@
       {{ resumen.comprobantesPorRevisar === 1 ? 'comprobante' : 'comprobantes' }} de pago para revisar.
       <template #append><v-btn variant="text" @click="verPendientesDeRevision">Ver cuáles</v-btn></template>
     </v-alert>
+    <v-alert v-if="resumen && resumen.reembolsosPendientes > 0" type="error" variant="tonal" class="mb-4" data-testid="aviso-reembolsos">
+      Hay <strong>{{ resumen.reembolsosPendientes }}</strong>
+      {{ resumen.reembolsosPendientes === 1 ? 'reembolso' : 'reembolsos' }} de dinero para devolverle a clientes.
+      <template #append><v-btn variant="text" @click="verCanceladas">Ver cuáles</v-btn></template>
+    </v-alert>
 
     <v-card variant="outlined" class="mb-4">
       <v-card-text>
@@ -67,6 +72,9 @@
         <v-chip size="small" :color="COLOR_ESTADO_RESERVA[item.estado]" variant="tonal">{{ ETIQUETA_ESTADO_RESERVA[item.estado] }}</v-chip>
         <v-chip v-if="item.pagosEnRevision > 0" size="x-small" color="warning" variant="flat" class="ml-1" :data-testid="`revision-${item.id}`">
           {{ item.pagosEnRevision }} por revisar
+        </v-chip>
+        <v-chip v-if="Number(item.reembolsoPendiente) > 0" size="x-small" color="error" variant="flat" class="ml-1" :data-testid="`reembolso-${item.id}`">
+          devolver {{ formatearImporte(item.reembolsoPendiente) }}
         </v-chip>
       </template>
       <template #[`item.acciones`]="{ item }">
@@ -158,6 +166,9 @@ watch([pagina, porPagina], cargar);
 
 function verPendientesDeRevision() {
   filtro.estado = 'pendiente';
+}
+function verCanceladas() {
+  filtro.estado = 'cancelada';
 }
 
 onMounted(async () => {

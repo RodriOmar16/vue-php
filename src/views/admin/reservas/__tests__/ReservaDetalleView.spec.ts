@@ -28,6 +28,7 @@ const reserva = (extra: Partial<ReservaDetalleAdmin> = {}): ReservaDetalleAdmin 
     { tipo: 'servicio', descripcion: 'Mozos', cantidad: 1, precioUnitario: '0.00', subtotal: '0.00', incluido: true },
   ],
   total: '1250.00', sena: { porcentaje: '50.00', monto: '625.00' }, pagado: '0.00', saldo: '1250.00',
+  reembolsable: '0.00', reembolsoPendiente: '0.00', reembolsado: '0.00', motivoCancelacion: null,
   pagos: [pago()],
   historial: [
     { accion: 'creada', autor: 'Sistema', detalle: { origen: 'web' }, fecha: '2027-02-01T14:00:00.000Z' },
@@ -282,6 +283,244 @@ describe('ReservaDetalleView', () => {
       Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockRejectedValue(new Error('denegado')) }, configurable: true });
       await clic(botonPorTexto('Copiar enlace para el cliente'));
       expect(genericosStore().textoSnack).toContain('http://localhost:3001/reserva/r1');
+    });
+  });
+
+  describe('cancelar la reserva', () => {
+    const confirmada = (extra: Partial<ReservaDetalleAdmin> = {}) =>
+      reserva({ estado: 'confirmada', pagado: '625.00', saldo: '625.00', reembolsable: '625.00', pagos: [pago({ estado: 'aprobado', tieneComprobante: false, metodo: 'efectivo' })], ...extra });
+    const radio = (valor: string) => document.querySelector<HTMLInputElement>(`.v-overlay--active input[type="radio"][value="${valor}"]`);
+    const botonCancelar = () => botonPorTexto('Cancelar reserva') as HTMLButtonElement | undefined;
+
+    it('se ofrece en una reserva pendiente o confirmada, y en ninguna otra', async () => {
+      await montar(reserva({ pagos: [] }));
+      expect(botonCancelar()).toBeTruthy();
+      wrapper.unmount();
+      document.body.innerHTML = '';
+      await montar(confirmada());
+      expect(botonCancelar()).toBeTruthy();
+      for (const estado of ['cancelada', 'expirada', 'completada'] as const) {
+        wrapper.unmount();
+        document.body.innerHTML = '';
+        await montar(reserva({ estado, pagos: [] }));
+        expect(botonCancelar()).toBeUndefined();
+      }
+    });
+
+    it('con un comprobante sin revisar está deshabilitado y explica qué hacer primero', async () => {
+      await montar();
+      expect(botonCancelar()!.disabled).toBe(true);
+      expect(wrapper.text()).toContain('Resolvelo antes de poder cancelar la reserva');
+    });
+
+    it('con dinero cobrado propone devolver todo, y explica que el reembolso queda pendiente', async () => {
+      await montar(confirmada());
+      await clic(botonCancelar());
+      expect(textoPantalla()).toContain('el horario vuelve a quedar disponible');
+      expect(textoPantalla()).toMatch(/Devolver todo lo cobrado \(\$\s?625,00\)/);
+      expect(radio('todo')!.checked).toBe(true);
+      expect(textoPantalla()).toContain('queda pendiente');
+    });
+
+    it('«devolver todo» no manda importe (la API devuelve lo cobrado), y recorta el motivo', async () => {
+      await montar(confirmada());
+      vi.mocked(api.cancelarReserva).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '625.00', saldo: '625.00' });
+      await clic(botonCancelar());
+      await escribir('Motivo de la cancelación', '  El cliente se mudó  ');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(api.cancelarReserva).toHaveBeenCalledWith('r1', { motivo: 'El cliente se mudó' });
+      expect(genericosStore().textoSnack).toContain('Reserva cancelada');
+      expect(api.obtenerReserva).toHaveBeenCalledTimes(2); // recarga
+    });
+
+    it('«no devolver nada» manda 0; «otro importe» manda el número', async () => {
+      await montar(confirmada());
+      vi.mocked(api.cancelarReserva).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '625.00', saldo: '625.00' });
+      await clic(botonCancelar());
+      await escribir('Motivo de la cancelación', 'Cancelación tardía');
+      await clic(radio('nada'));
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(api.cancelarReserva).toHaveBeenLastCalledWith('r1', { motivo: 'Cancelación tardía', reembolso: 0 });
+
+      vi.mocked(api.cancelarReserva).mockClear();
+      await clic(botonCancelar());
+      await escribir('Motivo de la cancelación', 'Cancelación parcial');
+      await clic(radio('otro'));
+      await escribir('Importe a devolver', '300.5');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(api.cancelarReserva).toHaveBeenLastCalledWith('r1', { motivo: 'Cancelación parcial', reembolso: 300.5 });
+    });
+
+    it('valida el motivo y el importe: no manda nada si algo está mal', async () => {
+      await montar(confirmada());
+      await clic(botonCancelar());
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(textoPantalla()).toContain('Campo obligatorio');
+      await escribir('Motivo de la cancelación', 'ab');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(textoPantalla()).toContain('al menos 3 caracteres');
+
+      await escribir('Motivo de la cancelación', 'Motivo válido');
+      await clic(radio('otro'));
+      await escribir('Importe a devolver', '625.01');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(textoPantalla()).toContain('No puede superar lo cobrado');
+      await escribir('Importe a devolver', '0');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(textoPantalla()).toContain('mayor a cero');
+      expect(api.cancelarReserva).not.toHaveBeenCalled();
+    });
+
+    it('si no se cobró nada lo dice y no pregunta por el dinero', async () => {
+      await montar(reserva({ pagos: [] }));
+      vi.mocked(api.cancelarReserva).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '0.00', saldo: '1250.00' });
+      await clic(botonCancelar());
+      expect(document.querySelector('[data-testid="sin-cobros"]')?.textContent).toContain('No se cobró nada');
+      expect(radio('todo')).toBeNull();
+      await escribir('Motivo de la cancelación', 'No va a hacer la fiesta');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(api.cancelarReserva).toHaveBeenCalledWith('r1', { motivo: 'No va a hacer la fiesta' });
+    });
+
+    it('un error de la API (por ejemplo, el evento ya se realizó) se muestra y el diálogo no se cierra', async () => {
+      await montar(confirmada());
+      vi.mocked(api.cancelarReserva).mockRejectedValue(new ApiError(409, 'El evento ya se realizó: no se puede cancelar.'));
+      await clic(botonCancelar());
+      await escribir('Motivo de la cancelación', 'Se canceló');
+      await clic(botonActivo('Cancelar la reserva'));
+      expect(textoPantalla()).toContain('El evento ya se realizó');
+      expect(hayDialogoActivo()).toBe(true);
+    });
+  });
+
+  describe('reembolsos', () => {
+    const reembolso = (extra: Partial<PagoReserva> = {}): PagoReserva => pago({ id: 'rb1', tipo: 'reembolso', estado: 'pendiente', metodo: 'transferencia', tieneComprobante: false, ...extra });
+    const cancelada = (extra: Partial<ReservaDetalleAdmin> = {}) =>
+      reserva({
+        estado: 'cancelada', expiraEn: null, pagado: '625.00', saldo: '625.00', reembolsable: '0.00', reembolsoPendiente: '625.00', reembolsado: '0.00',
+        motivoCancelacion: 'El cliente se mudó', pagos: [pago({ estado: 'aprobado', tieneComprobante: false, metodo: 'efectivo' }), reembolso()], ...extra,
+      });
+    const radio = (valor: string) => document.querySelector<HTMLInputElement>(`.v-overlay--active input[type="radio"][value="${valor}"]`);
+
+    it('una reserva cancelada explica el motivo y cuánto falta devolver', async () => {
+      await montar(cancelada());
+      const aviso = wrapper.find('[data-testid="aviso-cancelada"]').text();
+      expect(aviso).toContain('Reserva cancelada: El cliente se mudó');
+      expect(aviso).toContain('El horario volvió a quedar disponible');
+      expect(wrapper.find('[data-testid="falta-devolver"]').text()).toMatch(/625,00/);
+      expect(wrapper.find('[data-testid="por-devolver"]').text()).toMatch(/625,00/);
+      expect(wrapper.find('[data-testid="saldo"]').exists()).toBe(false); // «falta cobrar» no tiene sentido en una cancelada
+    });
+
+    it('un reembolso pendiente figura «Por devolver» y se maneja distinto a un comprobante: «Ya lo devolví» y «Anular»', async () => {
+      await montar(cancelada());
+      const fila = wrapper.findAll('tbody tr').find((tr) => tr.text().includes('reembolso'))!;
+      expect(fila.text()).toContain('Por devolver');
+      const botones = fila.findAll('button').map((b) => b.text());
+      expect(botones).toContain('Ya lo devolví');
+      expect(botones).toContain('Anular');
+      expect(botones).not.toContain('Aprobar');
+      expect(botones).not.toContain('Rechazar');
+    });
+
+    it('«Ya lo devolví» advierte que no se puede deshacer, y confirma con el medio usado', async () => {
+      await montar(cancelada());
+      vi.mocked(api.reembolsoRealizado).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '0.00', saldo: '1250.00' });
+      await clic(botonPorTexto('Ya lo devolví'));
+      expect(textoPantalla()).toContain('no se puede deshacer');
+      expect(textoPantalla()).toContain('ya salió');
+      expect(api.reembolsoRealizado).not.toHaveBeenCalled();
+      await clic(radio('efectivo'));
+      await clic(botonActivo('Ya lo devolví'));
+      expect(api.reembolsoRealizado).toHaveBeenCalledWith('rb1', 'efectivo');
+      expect(genericosStore().textoSnack).toContain('devuelto');
+    });
+
+    it('por defecto propone transferencia', async () => {
+      await montar(cancelada());
+      vi.mocked(api.reembolsoRealizado).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '0.00', saldo: '1250.00' });
+      await clic(botonPorTexto('Ya lo devolví'));
+      await clic(botonActivo('Ya lo devolví'));
+      expect(api.reembolsoRealizado).toHaveBeenCalledWith('rb1', 'transferencia');
+    });
+
+    it('anular exige un motivo y lo manda sin espacios', async () => {
+      await montar(cancelada());
+      vi.mocked(api.anularReembolso).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '625.00', saldo: '625.00' });
+      await clic(botonPorTexto('Anular'));
+      expect(textoPantalla()).toContain('Anular el reembolso');
+      await clic(botonActivo('Anular reembolso'));
+      expect(textoPantalla()).toContain('Campo obligatorio');
+      expect(api.anularReembolso).not.toHaveBeenCalled();
+      await escribir('Motivo', '  Lo cargué mal  ');
+      await clic(botonActivo('Anular reembolso'));
+      expect(api.anularReembolso).toHaveBeenCalledWith('rb1', 'Lo cargué mal');
+      expect(api.rechazarPago).not.toHaveBeenCalled(); // no es un comprobante
+      expect(genericosStore().textoSnack).toBe('Reembolso anulado.');
+    });
+
+    it('un reembolso devuelto o anulado ya no ofrece acciones y lo dice', async () => {
+      await montar(cancelada({ reembolsoPendiente: '0.00', reembolsado: '625.00', pagos: [pago({ estado: 'aprobado', tieneComprobante: false }), reembolso({ estado: 'aprobado', validadoPor: 'María' })] }));
+      const fila = wrapper.findAll('tbody tr').find((tr) => tr.text().includes('reembolso'))!;
+      expect(fila.text()).toContain('Devuelto');
+      expect(fila.findAll('button')).toHaveLength(0);
+      expect(wrapper.find('[data-testid="devuelto"]').text()).toMatch(/625,00/);
+      expect(wrapper.text()).toContain('Ya se le devolvieron');
+      expect(wrapper.find('[data-testid="por-devolver"]').exists()).toBe(false);
+
+      wrapper.unmount();
+      document.body.innerHTML = '';
+      await montar(cancelada({ reembolsoPendiente: '0.00', reembolsable: '625.00', pagos: [pago({ estado: 'aprobado', tieneComprobante: false }), reembolso({ estado: 'rechazado', motivoRechazo: 'Lo cargué mal' })] }));
+      const anulado = wrapper.findAll('tbody tr').find((tr) => tr.text().includes('reembolso'))!;
+      expect(anulado.text()).toContain('Anulado');
+      expect(anulado.text()).toContain('Lo cargué mal');
+    });
+
+    it('«Registrar un reembolso» aparece solo si queda dinero por devolver y la reserva lo admite', async () => {
+      const boton = () => botonPorTexto('Registrar un reembolso');
+      await montar(cancelada({ reembolsoPendiente: '0.00', reembolsable: '625.00', pagos: [pago({ estado: 'aprobado', tieneComprobante: false })] }));
+      expect(boton()).toBeTruthy();
+      for (const datos of [
+        cancelada(), // todo el dinero ya está comprometido en un reembolso pendiente (reembolsable 0)
+        reserva({ pagos: [] }), // pendiente, sin cobros
+        reserva({ estado: 'expirada', pagos: [] }),
+      ]) {
+        wrapper.unmount();
+        document.body.innerHTML = '';
+        await montar(datos);
+        expect(boton()).toBeUndefined();
+      }
+    });
+
+    it('registrar un reembolso propone lo máximo, valida el tope y manda número y medio', async () => {
+      await montar(cancelada({ reembolsoPendiente: '0.00', reembolsable: '625.00', pagos: [pago({ estado: 'aprobado', tieneComprobante: false })] }));
+      vi.mocked(api.registrarReembolso).mockResolvedValue({ reservaId: 'r1', estado: 'cancelada', pagado: '625.00', saldo: '625.00' });
+      await clic(botonPorTexto('Registrar un reembolso'));
+      expect(campo('Importe a devolver').element.value).toBe('625');
+      await escribir('Importe a devolver', '700');
+      await clic(botonActivo('Registrar reembolso'));
+      expect(textoPantalla()).toContain('No puede superar');
+      await escribir('Importe a devolver', '0');
+      await clic(botonActivo('Registrar reembolso'));
+      expect(textoPantalla()).toContain('mayor a cero');
+      expect(api.registrarReembolso).not.toHaveBeenCalled();
+
+      await escribir('Importe a devolver', '250.5');
+      await clic(radio('efectivo'));
+      await clic(botonActivo('Registrar reembolso'));
+      expect(api.registrarReembolso).toHaveBeenCalledWith('r1', { monto: 250.5, metodo: 'efectivo' });
+      expect(genericosStore().textoSnack).toContain('Queda pendiente');
+    });
+
+    it('el historial describe cancelaciones y reembolsos en castellano', async () => {
+      await montar(cancelada({
+        historial: [
+          { accion: 'cancelada', autor: 'María', detalle: { motivo: 'El cliente se mudó', reembolso: '625.00' }, fecha: '2027-02-02T10:00:00.000Z' },
+          { accion: 'reembolso_realizado', autor: 'María', detalle: { monto: '625.00' }, fecha: '2027-02-03T10:00:00.000Z' },
+        ],
+      }));
+      expect(wrapper.text()).toContain('Reserva cancelada');
+      expect(wrapper.text()).toContain('Reembolso devuelto al cliente');
     });
   });
 

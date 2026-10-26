@@ -449,6 +449,8 @@ export interface ReservaListada {
   saldo: string;
   /** Comprobantes que el salón todavía no aprobó ni rechazó */
   pagosEnRevision: number;
+  /** Dinero que hay que devolverle al cliente y todavía no se devolvió */
+  reembolsoPendiente: string;
 }
 
 export interface PaginaReservas {
@@ -472,6 +474,8 @@ export interface ResumenReservas {
   comprobantesPorRevisar: number;
   esperandoSena: number;
   proximas: number;
+  /** Devoluciones de dinero acordadas que todavía no se hicieron */
+  reembolsosPendientes: number;
 }
 
 export type EstadoPago = 'pendiente' | 'aprobado' | 'rechazado';
@@ -524,6 +528,11 @@ export interface ReservaDetalleAdmin {
   sena: { porcentaje: string; monto: string };
   pagado: string;
   saldo: string;
+  /** Cuánto de lo cobrado todavía se puede devolver (no está devuelto ni comprometido en otro reembolso) */
+  reembolsable: string;
+  reembolsoPendiente: string;
+  reembolsado: string;
+  motivoCancelacion: string | null;
   pagos: PagoReserva[];
   historial: EventoHistorial[];
 }
@@ -540,6 +549,16 @@ export interface ResultadoPago {
   estado: EstadoReserva;
   pagado: string;
   saldo: string;
+  reembolsado?: string;
+  reembolsoPendiente?: string;
+}
+
+export type MetodoDevolucion = 'efectivo' | 'transferencia';
+
+export interface DatosCancelacion {
+  motivo: string;
+  /** Se omite = devolver todo lo cobrado; 0 = no devolver nada */
+  reembolso?: number;
 }
 
 /** Cómo cobra la empresa la seña por transferencia (lo ve el cliente al ir a pagar) */

@@ -15,11 +15,11 @@ vi.mock('@/api/salones');
 const reserva = (extra: Partial<ReservaListada> = {}): ReservaListada => ({
   id: 'r1', estado: 'pendiente', fecha: '2027-03-06', horaInicio: '15:00', horaFin: '19:00', salon: { id: 1, nombre: 'Salón Arcoíris' },
   combo: 'Combo Plus', cliente: { nombre: 'Ana Gómez', dni: '30123456' }, invitados: 20, total: '1250.00', pagado: '0.00', saldo: '1250.00',
-  pagosEnRevision: 0, ...extra,
+  pagosEnRevision: 0, reembolsoPendiente: '0.00', ...extra,
 });
 const pagina = (items: ReservaListada[], total = items.length): PaginaReservas => ({ total, pagina: 1, limite: 20, items });
 const salon = (id: number, nombre: string) => ({ id, nombre }) as Salon;
-const RESUMEN: ResumenReservas = { comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0 };
+const RESUMEN: ResumenReservas = { comprobantesPorRevisar: 0, esperandoSena: 0, proximas: 0, reembolsosPendientes: 0 };
 
 let wrapper: VueWrapper;
 const ultimaConsulta = () => vi.mocked(api.listarReservas).mock.calls.at(-1)![0]!;
@@ -69,13 +69,34 @@ describe('ReservasView', () => {
     expect(wrapper.find('[data-testid="revision-r1"]').text()).toContain('2 por revisar');
   });
 
+  it('marca las reservas canceladas a las que todavía hay que devolverles dinero', async () => {
+    await montar([reserva({ estado: 'cancelada', reembolsoPendiente: '625.00' }), reserva({ id: 'r2', estado: 'cancelada' })]);
+    expect(wrapper.find('[data-testid="reembolso-r1"]').text()).toMatch(/devolver\s+\$\s?625,00/);
+    expect(wrapper.find('[data-testid="reembolso-r2"]').exists()).toBe(false);
+  });
+
+  it('avisa cuántos reembolsos hay para devolver, y «Ver cuáles» muestra las canceladas', async () => {
+    await montar([reserva()], { ...RESUMEN, reembolsosPendientes: 2 });
+    expect(wrapper.find('[data-testid="aviso-reembolsos"]').text()).toContain('2 reembolsos');
+    const botones = [...document.querySelectorAll('button')].filter((b) => b.textContent?.includes('Ver cuáles'));
+    await clic(botones.at(-1));
+    await vi.advanceTimersByTimeAsync(400);
+    await flushPromises();
+    expect(ultimaConsulta()).toMatchObject({ estado: 'cancelada', pagina: 1 });
+  });
+
+  it('sin reembolsos pendientes no muestra ese aviso', async () => {
+    await montar();
+    expect(wrapper.find('[data-testid="aviso-reembolsos"]').exists()).toBe(false);
+  });
+
   it('sin resultados lo dice', async () => {
     await montar([]);
     expect(wrapper.text()).toContain('No hay reservas con esos filtros');
   });
 
   it('avisa cuántos comprobantes esperan revisión, y «Ver cuáles» filtra por las pendientes', async () => {
-    await montar([reserva()], { comprobantesPorRevisar: 3, esperandoSena: 1, proximas: 0 });
+    await montar([reserva()], { ...RESUMEN, comprobantesPorRevisar: 3, esperandoSena: 1 });
     expect(wrapper.find('[data-testid="aviso-comprobantes"]').text()).toContain('3 comprobantes');
     await clic(botonPorTexto('Ver cuáles'));
     await vi.advanceTimersByTimeAsync(400);
@@ -87,7 +108,7 @@ describe('ReservasView', () => {
     await montar();
     expect(wrapper.find('[data-testid="aviso-comprobantes"]').exists()).toBe(false);
     wrapper.unmount();
-    await montar([reserva()], { comprobantesPorRevisar: 1, esperandoSena: 0, proximas: 0 });
+    await montar([reserva()], { ...RESUMEN, comprobantesPorRevisar: 1 });
     expect(wrapper.find('[data-testid="aviso-comprobantes"]').text()).toMatch(/1\s+comprobante de pago/);
   });
 

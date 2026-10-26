@@ -20,15 +20,25 @@
         <v-chip :color="COLOR_ESTADO_RESERVA[reserva.estado]" variant="flat" data-testid="estado">{{ ETIQUETA_ESTADO_RESERVA[reserva.estado] }}</v-chip>
         <v-spacer />
         <v-btn variant="tonal" prepend-icon="fa-solid fa-link" @click="copiarEnlace">Copiar enlace para el cliente</v-btn>
+        <v-btn v-if="puedeCancelar" color="error" variant="outlined" prepend-icon="fa-solid fa-ban" :disabled="hayComprobantesSinRevisar" @click="cancelacion.visible = true">
+          Cancelar reserva
+        </v-btn>
       </div>
 
       <v-alert v-if="reserva.estado === 'pendiente'" type="info" variant="tonal" class="mb-4">
-        <template v-if="reserva.pagos.some((p) => p.estado === 'pendiente')">
-          Hay un comprobante esperando tu revisión: el horario no vence hasta que lo apruebes o lo rechaces.
+        <template v-if="hayComprobantesSinRevisar">
+          Hay un comprobante esperando tu revisión: el horario no vence hasta que lo apruebes o lo rechaces. Resolvelo antes de poder cancelar la reserva.
         </template>
         <template v-else>
           Esperando la seña de <strong>{{ formatearImporte(reserva.sena.monto) }}</strong>. Si no llega a tiempo, el horario se libera solo.
         </template>
+      </v-alert>
+      <v-alert v-else-if="reserva.estado === 'cancelada'" type="error" variant="tonal" class="mb-4" data-testid="aviso-cancelada">
+        Reserva cancelada<template v-if="reserva.motivoCancelacion">: {{ reserva.motivoCancelacion }}</template>. El horario volvió a quedar disponible.
+        <template v-if="Number(reserva.reembolsoPendiente) > 0">
+          <strong data-testid="falta-devolver"> Falta devolverle {{ formatearImporte(reserva.reembolsoPendiente) }} al cliente.</strong>
+        </template>
+        <template v-else-if="Number(reserva.reembolsado) > 0"> Ya se le devolvieron {{ formatearImporte(reserva.reembolsado) }}.</template>
       </v-alert>
       <v-alert v-else-if="reserva.estado === 'expirada'" type="warning" variant="tonal" class="mb-4">
         El plazo para pagar la seña venció y el horario volvió a quedar disponible.
@@ -76,7 +86,9 @@
             <tr class="font-weight-bold"><td>Total</td><td class="text-right" data-testid="total">{{ formatearImporte(reserva.total) }}</td></tr>
             <tr><td>Seña ({{ Number(reserva.sena.porcentaje) }}%)</td><td class="text-right">{{ formatearImporte(reserva.sena.monto) }}</td></tr>
             <tr><td>Cobrado</td><td class="text-right" data-testid="cobrado">{{ formatearImporte(reserva.pagado) }}</td></tr>
-            <tr class="font-weight-bold"><td>Falta cobrar</td><td class="text-right" data-testid="saldo">{{ formatearImporte(reserva.saldo) }}</td></tr>
+            <tr v-if="reserva.estado !== 'cancelada'" class="font-weight-bold"><td>Falta cobrar</td><td class="text-right" data-testid="saldo">{{ formatearImporte(reserva.saldo) }}</td></tr>
+            <tr v-if="Number(reserva.reembolsado) > 0"><td>Ya devuelto al cliente</td><td class="text-right" data-testid="devuelto">{{ formatearImporte(reserva.reembolsado) }}</td></tr>
+            <tr v-if="Number(reserva.reembolsoPendiente) > 0" class="font-weight-bold"><td>Por devolver al cliente</td><td class="text-right" data-testid="por-devolver">{{ formatearImporte(reserva.reembolsoPendiente) }}</td></tr>
           </tbody>
         </v-table>
       </v-card>
@@ -84,6 +96,7 @@
       <div class="d-flex flex-wrap align-center mt-6 mb-2 ga-2">
         <h2 class="text-h6">Pagos</h2>
         <v-spacer />
+        <v-btn v-if="puedeReembolsar" variant="tonal" prepend-icon="fa-solid fa-rotate-left" @click="nuevoReembolso.visible = true">Registrar un reembolso</v-btn>
         <v-btn v-if="puedeRegistrar" color="primary" prepend-icon="fa-solid fa-plus" @click="registrar.visible = true">Registrar un pago</v-btn>
       </div>
       <v-alert v-if="errorAccion" type="error" variant="tonal" class="mb-3" role="alert" closable @click:close="errorAccion = ''">{{ errorAccion }}</v-alert>
@@ -97,7 +110,7 @@
             <td class="font-weight-medium">{{ formatearImporte(p.monto) }}<span class="text-caption text-medium-emphasis"> · {{ p.tipo === 'sena' ? 'seña' : p.tipo === 'saldo' ? 'saldo' : 'reembolso' }}</span></td>
             <td>{{ ETIQUETA_METODO[p.metodo] }}</td>
             <td>
-              <v-chip size="small" :color="COLOR_PAGO[p.estado]" variant="tonal">{{ ETIQUETA_PAGO[p.estado] }}</v-chip>
+              <v-chip size="small" :color="colorPago(p)" variant="tonal">{{ etiquetaPago(p) }}</v-chip>
               <div v-if="p.motivoRechazo" class="text-caption text-medium-emphasis">{{ p.motivoRechazo }}</div>
               <div v-if="p.validadoPor" class="text-caption text-medium-emphasis">por {{ p.validadoPor }}</div>
             </td>
@@ -105,7 +118,11 @@
               <v-btn v-if="p.tieneComprobante" variant="text" size="small" :aria-label="`Ver el comprobante de ${formatearImporte(p.monto)}`" @click="verComprobante(p.id)">
                 <v-icon>fa-solid fa-file-image</v-icon><v-tooltip activator="parent" location="top">Ver comprobante</v-tooltip>
               </v-btn>
-              <template v-if="p.estado === 'pendiente'">
+              <template v-if="p.estado === 'pendiente' && p.tipo === 'reembolso'">
+                <v-btn color="success" variant="tonal" size="small" class="mx-1" @click="Object.assign(devolver, { visible: true, pago: p })">Ya lo devolví</v-btn>
+                <v-btn color="error" variant="text" size="small" @click="Object.assign(anular, { visible: true, pagoId: p.id })">Anular</v-btn>
+              </template>
+              <template v-else-if="p.estado === 'pendiente'">
                 <v-btn color="success" variant="tonal" size="small" class="mx-1" :loading="trabajando === p.id" :disabled="trabajando !== null" @click="pedirAprobar(p)">Aprobar</v-btn>
                 <v-btn color="error" variant="text" size="small" :disabled="trabajando !== null" @click="rechazar.pagoId = p.id; rechazar.visible = true">Rechazar</v-btn>
               </template>
@@ -126,6 +143,10 @@
 
       <DialogoComprobante v-model="comprobante.visible" :pago-id="comprobante.pagoId" />
       <DialogoRechazarPago v-model="rechazar.visible" :pago-id="rechazar.pagoId" @hecho="alHacer('Comprobante rechazado. El cliente puede enviar otro.')" />
+      <DialogoCancelarReserva v-model="cancelacion.visible" :reserva-id="reserva.id" :reembolsable="reserva.reembolsable" @hecho="alHacer('Reserva cancelada. El horario volvió a quedar disponible.')" />
+      <DialogoReembolso v-model="devolver.visible" modo="devuelto" :pago-id="devolver.pago?.id ?? null" :monto="devolver.pago?.monto" @hecho="alHacer('Reembolso confirmado como devuelto.')" />
+      <DialogoReembolso v-model="nuevoReembolso.visible" modo="registrar" :reserva-id="reserva.id" :maximo="reserva.reembolsable" @hecho="alHacer('Reembolso registrado. Queda pendiente hasta que confirmes que lo devolviste.')" />
+      <DialogoRechazarPago v-model="anular.visible" modo="anular" :pago-id="anular.pagoId" @hecho="alHacer('Reembolso anulado.')" />
       <DialogoRegistrarPago
         v-model="registrar.visible"
         :reserva-id="reserva.id"
@@ -164,7 +185,9 @@ import ModalConfirmar from '@/components/utils/ModalConfirmar.vue';
 import { genericosStore } from '@/store/genericos';
 import { fechaCorta } from '@/utils/combos';
 import { formatearImporte } from '@/utils/dinero';
+import DialogoCancelarReserva from './DialogoCancelarReserva.vue';
 import DialogoComprobante from './DialogoComprobante.vue';
+import DialogoReembolso from './DialogoReembolso.vue';
 import DialogoRechazarPago from './DialogoRechazarPago.vue';
 import DialogoRegistrarPago from './DialogoRegistrarPago.vue';
 
@@ -174,6 +197,10 @@ const avisos = genericosStore();
 const ETIQUETA_PAGO: Record<EstadoPago, string> = { pendiente: 'En revisión', aprobado: 'Aprobado', rechazado: 'Rechazado' };
 const COLOR_PAGO: Record<EstadoPago, string> = { pendiente: 'warning', aprobado: 'success', rechazado: 'error' };
 const ETIQUETA_METODO = { pasarela: 'Online', transferencia: 'Transferencia', efectivo: 'Efectivo' } as const;
+// un reembolso no está «en revisión»: está por devolver, devuelto o anulado
+const ETIQUETA_REEMBOLSO: Record<EstadoPago, string> = { pendiente: 'Por devolver', aprobado: 'Devuelto', rechazado: 'Anulado' };
+const etiquetaPago = (p: PagoReserva) => (p.tipo === 'reembolso' ? ETIQUETA_REEMBOLSO : ETIQUETA_PAGO)[p.estado];
+const colorPago = (p: PagoReserva) => (p.tipo === 'reembolso' && p.estado === 'rechazado' ? 'secondary' : COLOR_PAGO[p.estado]);
 
 const EVENTOS: Record<string, string> = {
   creada: 'Reserva creada',
@@ -184,6 +211,10 @@ const EVENTOS: Record<string, string> = {
   confirmada: 'Reserva confirmada',
   expirada: 'Venció el plazo para pagar la seña',
   vinculada_a_cuenta: 'El cliente la agregó a su cuenta',
+  cancelada: 'Reserva cancelada',
+  reembolso_registrado: 'Reembolso acordado',
+  reembolso_realizado: 'Reembolso devuelto al cliente',
+  reembolso_anulado: 'Reembolso anulado',
 };
 const describirEvento = (accion: string) => EVENTOS[accion] ?? accion;
 const detalleDe = (h: EventoHistorial): string => {
@@ -203,9 +234,19 @@ const trabajando = ref<string | null>(null);
 const comprobante = reactive({ visible: false, pagoId: null as string | null });
 const rechazar = reactive({ visible: false, pagoId: null as string | null });
 const registrar = reactive({ visible: false });
+const cancelacion = reactive({ visible: false });
+const nuevoReembolso = reactive({ visible: false });
+const devolver = reactive({ visible: false, pago: null as PagoReserva | null });
+const anular = reactive({ visible: false, pagoId: null as string | null });
 const aprobar = reactive({ visible: false, pago: null as PagoReserva | null });
 
 const sitio = (import.meta.env.VITE_SITIO_URL as string | undefined) ?? 'http://localhost:3001';
+// los reembolsos pendientes no son comprobantes por revisar
+const hayComprobantesSinRevisar = computed(() => reserva.value?.pagos.some((p) => p.estado === 'pendiente' && p.tipo !== 'reembolso') ?? false);
+const puedeCancelar = computed(() => reserva.value !== null && ['pendiente', 'confirmada'].includes(reserva.value.estado));
+const puedeReembolsar = computed(
+  () => reserva.value !== null && ['confirmada', 'completada', 'cancelada'].includes(reserva.value.estado) && Number(reserva.value.reembolsable) > 0,
+);
 const puedeRegistrar = computed(() => reserva.value !== null && ['pendiente', 'confirmada', 'completada'].includes(reserva.value.estado) && Number(reserva.value.saldo) > 0);
 const faltaSena = computed(() => {
   if (!reserva.value) return '0';
