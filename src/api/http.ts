@@ -26,6 +26,7 @@ export interface OpcionesHttp {
 }
 
 export interface OpcionesPedido {
+  /** Objeto/valor -> JSON. Un FormData se envía tal cual (subida de archivos). */
   cuerpo?: unknown;
   query?: Record<string, string | number | boolean | undefined | null>;
   /** false = ruta pública o de login: no envía el token ni dispara el cierre de sesión ante un 401 */
@@ -74,6 +75,9 @@ export class ClienteHttp {
   post<T>(ruta: string, cuerpo?: unknown, opciones?: Omit<OpcionesPedido, 'cuerpo'>) {
     return this.pedir<T>('POST', ruta, { ...opciones, cuerpo });
   }
+  put<T>(ruta: string, cuerpo?: unknown, opciones?: Omit<OpcionesPedido, 'cuerpo'>) {
+    return this.pedir<T>('PUT', ruta, { ...opciones, cuerpo });
+  }
   patch<T>(ruta: string, cuerpo?: unknown, opciones?: Omit<OpcionesPedido, 'cuerpo'>) {
     return this.pedir<T>('PATCH', ruta, { ...opciones, cuerpo });
   }
@@ -82,7 +86,7 @@ export class ClienteHttp {
   }
 
   async pedir<T>(
-    metodo: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    metodo: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     ruta: string,
     { cuerpo, query, autenticado = true }: OpcionesPedido = {},
   ): Promise<T> {
@@ -98,7 +102,9 @@ export class ClienteHttp {
     const url = `${baseUrl.replace(/\/+$/, '')}${ruta}${qs ? `?${qs}` : ''}`;
 
     const cabeceras: Record<string, string> = { Accept: 'application/json' };
-    if (cuerpo !== undefined) cabeceras['Content-Type'] = 'application/json';
+    const esFormulario = typeof FormData !== 'undefined' && cuerpo instanceof FormData;
+    // con FormData el navegador fija el Content-Type (con el boundary) por su cuenta
+    if (cuerpo !== undefined && !esFormulario) cabeceras['Content-Type'] = 'application/json';
     const token = autenticado ? obtenerToken() : null;
     if (token) cabeceras.Authorization = `Bearer ${token}`;
 
@@ -107,7 +113,7 @@ export class ClienteHttp {
       respuesta = await fetchImpl(url, {
         method: metodo,
         headers: cabeceras,
-        body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
+        body: cuerpo === undefined ? undefined : esFormulario ? (cuerpo as FormData) : JSON.stringify(cuerpo),
       });
     } catch {
       throw new ApiError(0, 'No se pudo conectar con el servidor. Revise su conexión.');

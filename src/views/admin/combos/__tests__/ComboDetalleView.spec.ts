@@ -1,6 +1,7 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as apiMedios from '@/api/medios';
 import * as api from '@/api/combos';
 import { ApiError } from '@/api/http';
 import type { Combo, Cotizacion, Perfil, RolCodigo, Tarifa } from '@/api/tipos';
@@ -11,6 +12,7 @@ import { botonActivo, botonAria, botonPorTexto, campo, clic, escribir, routerDeP
 import ComboDetalleView from '../ComboDetalleView.vue';
 
 vi.mock('@/api/combos');
+vi.mock('@/api/medios');
 vi.mock('@/api/catalogos');
 vi.mock('@/api/salones');
 
@@ -49,6 +51,7 @@ async function montar(rol: RolCodigo = 'propietario', tarifas: Tarifa[] = [tarif
   useSesionStore().usuario = perfil;
   vi.mocked(api.obtenerCombo).mockResolvedValue(combo);
   vi.mocked(api.listarTarifas).mockResolvedValue(tarifas);
+  vi.mocked(apiMedios.listarMedios).mockResolvedValue([]);
   wrapper = mount(ComboDetalleView, { props: { id: 1 }, global: { plugins: [vuetify, pinia, await routerDePrueba()] }, attachTo: document.body });
   await flushPromises();
 }
@@ -82,6 +85,7 @@ describe('ComboDetalleView', () => {
     it('si falla la carga muestra el motivo y permite reintentar', async () => {
       vi.mocked(api.obtenerCombo).mockRejectedValueOnce(new ApiError(404, 'No se encontró lo que busca.'));
       vi.mocked(api.listarTarifas).mockResolvedValue([]);
+      vi.mocked(apiMedios.listarMedios).mockResolvedValue([]);
       const pinia = createPinia();
       setActivePinia(pinia);
       wrapper = mount(ComboDetalleView, { props: { id: 1 }, global: { plugins: [vuetify, pinia, await routerDePrueba()] }, attachTo: document.body });

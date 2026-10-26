@@ -88,6 +88,10 @@
         </v-card-text>
       </v-card>
 
+      <v-card variant="outlined" class="mb-6">
+        <v-card-text><GaleriaMedios tipo="combos" :id="combo.id" :editable="puedeEditar" /></v-card-text>
+      </v-card>
+
       <!-- Tarifas -->
       <div class="d-flex flex-wrap align-center mb-2 ga-2">
         <h2 class="text-h6">Tarifas por día o temporada</h2>
@@ -156,6 +160,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { actualizarTarifa, eliminarTarifa, listarTarifas, obtenerCombo } from '@/api/combos';
 import { ApiError } from '@/api/http';
 import type { Combo, Tarifa } from '@/api/tipos';
+import GaleriaMedios from '@/components/GaleriaMedios.vue';
 import ModalConfirmar from '@/components/utils/ModalConfirmar.vue';
 import { genericosStore } from '@/store/genericos';
 import { useSesionStore } from '@/store/sesion';

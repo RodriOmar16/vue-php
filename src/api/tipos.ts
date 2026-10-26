@@ -360,3 +360,18 @@ export interface Cotizacion {
   excedente: { personas: number; precioPorPersona: string; importe: string };
   total: string;
 }
+
+// ---------- Fotos (medios) ----------
+
+export type TipoMedio = 'salones' | 'combos' | 'instalaciones';
+
+export interface Medio {
+  id: number;
+  orden: number;
+  esPortada: boolean;
+  alt: string | null;
+  /** URL pública (assets.studiosrm.com.ar): el navegador la baja directo, sin pasar por la API */
+  url: string;
+  mime: string;
+  bytes: number;
+}

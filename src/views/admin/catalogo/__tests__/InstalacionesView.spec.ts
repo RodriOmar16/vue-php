@@ -1,6 +1,7 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as apiMedios from '@/api/medios';
 import * as api from '@/api/catalogos';
 import { ApiError } from '@/api/http';
 import type { Instalacion, Perfil, RolCodigo } from '@/api/tipos';
@@ -11,6 +12,7 @@ import { botonActivo, botonAria, botonPorTexto, campo, clic, escribir, textoPant
 import InstalacionesView from '../InstalacionesView.vue';
 
 vi.mock('@/api/catalogos');
+vi.mock('@/api/medios');
 
 const instalacion = (extra: Partial<Instalacion> = {}): Instalacion => ({
   id: 7, nombre: 'Cama elástica', descripcion: 'Con red de seguridad', precio: '2500.00', edadMin: 4, edadMax: 12,
@@ -31,6 +33,7 @@ async function montar(lista: Instalacion[] = [instalacion(), PELOTERO], rol: Rol
   };
   useSesionStore().usuario = perfil;
   vi.mocked(api.listarInstalaciones).mockResolvedValue(lista);
+  vi.mocked(apiMedios.listarMedios).mockResolvedValue([]);
   wrapper = mount(InstalacionesView, { global: { plugins: [vuetify, pinia] }, attachTo: document.body });
   await flushPromises();
 }

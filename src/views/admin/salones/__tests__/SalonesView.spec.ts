@@ -2,6 +2,7 @@ import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/api/http';
+import * as apiMedios from '@/api/medios';
 import * as api from '@/api/salones';
 import type { Perfil, RolCodigo, Salon } from '@/api/tipos';
 import vuetify from '@/plugins/vuetify';
@@ -13,6 +14,7 @@ import {
 import SalonesView from '../SalonesView.vue';
 
 vi.mock('@/api/salones');
+vi.mock('@/api/medios');
 
 const salon = (extra: Partial<Salon> = {}): Salon => ({
   id: 1, nombre: 'Salón Arcoíris', descripcion: 'El más grande', capacidad: 80, esDefault: true,
@@ -32,6 +34,7 @@ async function montar(lista: Salon[] = [PRINCIPAL, SEGUNDO], rol: RolCodigo = 'p
   };
   useSesionStore().usuario = perfil;
   vi.mocked(api.listarSalones).mockResolvedValue(lista);
+  vi.mocked(apiMedios.listarMedios).mockResolvedValue([]);
   const router = await routerDePrueba();
   wrapper = mount(SalonesView, { global: { plugins: [vuetify, pinia, router] }, attachTo: document.body });
   await flushPromises();

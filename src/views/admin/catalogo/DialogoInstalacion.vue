@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="visible" max-width="560" :persistent="enviando">
+  <v-dialog v-model="visible" max-width="640" scrollable :persistent="enviando">
     <v-card>
       <v-card-title>{{ instalacion ? 'Editar instalación' : 'Nueva instalación' }}</v-card-title>
       <v-card-text>
@@ -37,6 +37,9 @@
           <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mt-3" role="alert">{{ error }}</v-alert>
           <button type="submit" class="d-none" tabindex="-1" aria-hidden="true">enviar</button>
         </v-form>
+        <v-divider class="my-4" />
+        <GaleriaMedios v-if="instalacion" tipo="instalaciones" :id="instalacion.id" editable />
+        <p v-else class="text-caption text-medium-emphasis">Podrás agregar fotos después de crear la instalación.</p>
       </v-card-text>
       <v-card-actions class="justify-end">
         <v-btn variant="text" :disabled="enviando" @click="visible = false">Cancelar</v-btn>
@@ -47,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import GaleriaMedios from '@/components/GaleriaMedios.vue';
 import { computed, ref, watch } from 'vue';
 import type { VForm } from 'vuetify/components';
 import { actualizarInstalacion, crearInstalacion } from '@/api/catalogos';

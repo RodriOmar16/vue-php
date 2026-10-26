@@ -60,6 +60,23 @@ describe('ClienteHttp', () => {
     expect(vacio).toBeUndefined();
   });
 
+  it('PUT envía JSON; un FormData se manda tal cual y SIN Content-Type (lo fija el navegador)', async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => respuesta(200, {}));
+    const http = crear(fetchMock);
+
+    await http.put('/x/orden', { medioIds: [2, 1] });
+    expect(fetchMock.mock.calls[0][1].method).toBe('PUT');
+    expect(fetchMock.mock.calls[0][1].body).toBe('{"medioIds":[2,1]}');
+
+    const datos = new FormData();
+    datos.append('archivo', new File(['x'], 'foto.png', { type: 'image/png' }));
+    await http.post('/x', datos);
+    const [, init] = fetchMock.mock.calls[1];
+    expect(init.body).toBe(datos);
+    expect(init.headers['Content-Type']).toBeUndefined();
+    expect(init.headers.Authorization).toBe('Bearer TOKEN');
+  });
+
   it('no envía el token en rutas no autenticadas ni si no hay token', async () => {
     // una Response nueva por llamada: su cuerpo solo se puede leer una vez
     const fetchMock = vi.fn().mockImplementation(async () => respuesta(200, {}));
