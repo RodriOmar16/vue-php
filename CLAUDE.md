@@ -63,3 +63,6 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 
 ## Cancelación del cliente (panel)
 - `/admin/marca` → «Si el cliente cancela su reserva»: política (nada / la seña / todo lo pagado; por defecto nada) y días de plazo (1–365). El detalle de una reserva cancelada por el cliente lo dice («cancelada por el cliente»); el reembolso que corresponda queda «Por devolver» como cualquier otro.
+
+## Mi página (panel)
+- `/admin/pagina` («Mi página», solo dueño): prende/apaga y reordena secciones (flechas, sin arrastrar), encabezado con foto o solo color, mapa y hasta 10 preguntas frecuentes. Avisa cuando una sección prendida no tiene contenido (lo carga en Marca) y que los cambios pueden tardar hasta un minuto en verse (caché del sitio). `api/landing.ts`.

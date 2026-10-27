@@ -403,6 +403,33 @@ export interface MarcaEmpresa {
 /** Qué se le devuelve al cliente si cancela dentro del plazo */
 export type PoliticaCancelacion = 'ninguno' | 'sena' | 'todo';
 
+// ---------- «Mi página» (cómo se arma la página pública) ----------
+
+export const SECCIONES_LANDING = ['salones', 'galeria', 'nosotros', 'preguntas', 'ubicacion', 'contacto'] as const;
+export type SeccionLanding = (typeof SECCIONES_LANDING)[number];
+export type EncabezadoLanding = 'foto' | 'color';
+
+export interface SeccionConfig {
+  tipo: SeccionLanding;
+  visible: boolean;
+}
+
+export interface PreguntaFrecuente {
+  pregunta: string;
+  respuesta: string;
+}
+
+export interface LandingConfig {
+  encabezado: EncabezadoLanding;
+  /** en el orden en que se muestran */
+  secciones: SeccionConfig[];
+  preguntas: PreguntaFrecuente[];
+  mostrarMapa: boolean;
+}
+
+/** Omitir un campo lo conserva; las listas se reemplazan completas */
+export type CambiosLanding = Partial<LandingConfig>;
+
 /** Omitir un campo lo conserva; null lo quita (el nombre no se puede quitar) */
 export interface CambiosMarca {
   nombre?: string;

@@ -42,6 +42,7 @@ async function montar(usuario: Perfil) {
           { path: 'catalogo/menus', name: 'admin-catalogo-menus', component: vacio },
           { path: 'combos', name: 'admin-combos', component: vacio },
           { path: 'marca', name: 'admin-marca', component: vacio },
+          { path: 'pagina', name: 'admin-pagina', component: vacio },
           { path: 'reservas', name: 'admin-reservas', component: vacio },
           { path: 'calendario', name: 'admin-calendario', component: vacio },
         ],

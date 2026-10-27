@@ -77,6 +77,12 @@ const router = createRouter({
           meta: { roles: ['propietario', 'empleado'] },
         },
         {
+          path: 'pagina',
+          name: 'admin-pagina',
+          component: () => import('@/views/admin/pagina/MiPaginaView.vue'),
+          meta: { roles: ['propietario'] },
+        },
+        {
           path: 'marca',
           name: 'admin-marca',
           component: () => import('@/views/admin/marca/MarcaView.vue'),
