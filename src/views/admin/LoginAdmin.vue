@@ -9,6 +9,7 @@
             <v-form ref="formulario" @submit.prevent="enviar">
               <v-text-field
                 v-model="email"
+                class="campo"
                 label="Email"
                 type="email"
                 autocomplete="username"
@@ -18,6 +19,7 @@
               />
               <v-text-field
                 v-model="password"
+                class="campo"
                 label="Contraseña"
                 :type="verClave ? 'text' : 'password'"
                 autocomplete="current-password"
@@ -26,10 +28,13 @@
                 :append-inner-icon="verClave ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
                 @click:append-inner="verClave = !verClave"
               />
-              <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-4" role="alert">
+              <v-alert v-if="error" type="error" variant="tonal" density="compact" class="aviso mb-4" role="alert">
                 {{ error }}
               </v-alert>
               <v-btn type="submit" color="primary" block size="large" :loading="enviando">Ingresar</v-btn>
+              <div class="text-center mt-4">
+                <v-btn variant="text" size="small" :to="{ name: 'admin-olvide' }" data-testid="olvide">¿Olvidaste tu contraseña?</v-btn>
+              </div>
             </v-form>
           </v-card-text>
         </v-card>
@@ -37,6 +42,30 @@
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+/* Cada campo deja aire debajo y su mensaje de error es más chico, para que no quede pegado al campo siguiente. */
+.campo {
+  margin-bottom: 12px;
+}
+.campo :deep(.v-input__details) {
+  padding-top: 6px;
+  padding-inline: 4px;
+}
+.campo :deep(.v-messages__message) {
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+.campo :deep(.v-field__append-inner .v-icon) {
+  font-size: 16px;
+}
+.aviso {
+  font-size: 0.875rem;
+}
+.aviso :deep(.v-alert__prepend .v-icon) {
+  font-size: 18px;
+}
+</style>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';

@@ -66,3 +66,11 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 
 ## Mi página (panel)
 - `/admin/pagina` («Mi página», solo dueño): prende/apaga y reordena secciones (flechas, sin arrastrar), encabezado con foto o solo color, mapa y hasta 10 preguntas frecuentes. Avisa cuando una sección prendida no tiene contenido (lo carga en Marca) y que los cambios pueden tardar hasta un minuto en verse (caché del sitio). `api/landing.ts`.
+
+## Raíz «/» del panel
+- `/` (`views/general/Inicio.vue`) es una portada mínima del panel: «Ingresar» (o «Ir al panel» si hay sesión) y un enlace al sitio público (`VITE_SITIO_URL`). Nunca redirige sola. `LayoutPublico` y `Navigation` (restos del sitio viejo) ya no se usan.
+- El login (`LoginAdmin.vue`) deja aire entre campos y usa mensajes e íconos de error más chicos.
+
+## Olvidé mi contraseña (panel)
+- `/admin/olvide` y `/admin/restablecer?token=` (rutas públicas; la primera solo para invitados); enlace «¿Olvidaste tu contraseña?» en el login. Mínimo 10 caracteres, con ojito. Si el enlace venció o ya se usó, ofrece pedir otro. `api/auth.ts`: `olvidePassword`, `restablecerPassword`.
+- `/admin/marca` suma **Localidad** y **Provincia** (para que el sitio público permita buscar y filtrar por zona).

@@ -87,6 +87,10 @@
             <v-card-text>
               <v-text-field v-model="form.direccion" label="Dirección" :rules="[maximo(255)]" :disabled="!puedeEditar || guardando" />
               <v-row>
+                <v-col cols="12" sm="6"><v-text-field v-model="form.localidad" label="Localidad" hint="Tus clientes pueden buscarte y filtrar por ella en el sitio" persistent-hint :rules="[maximo(100)]" :disabled="!puedeEditar || guardando" /></v-col>
+                <v-col cols="12" sm="6"><v-text-field v-model="form.provincia" label="Provincia" :rules="[maximo(100)]" :disabled="!puedeEditar || guardando" /></v-col>
+              </v-row>
+              <v-row>
                 <v-col cols="12" sm="6"><v-text-field v-model="form.telefono" label="Teléfono" :rules="[maximo(30)]" :disabled="!puedeEditar || guardando" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="form.email" label="Email de contacto" type="email" :rules="[regla.email]" :disabled="!puedeEditar || guardando" /></v-col>
               </v-row>
@@ -232,15 +236,15 @@ const errorCarga = ref('');
 const error = ref('');
 const errorLogo = ref('');
 
-type CampoTexto = 'nombre' | 'tituloHero' | 'textoHero' | 'sobreNosotros' | 'direccion' | 'telefono' | 'email' | 'colorPrimario' | 'colorSecundario';
-const CAMPOS_TEXTO: CampoTexto[] = ['nombre', 'tituloHero', 'textoHero', 'sobreNosotros', 'direccion', 'telefono', 'email', 'colorPrimario', 'colorSecundario'];
+type CampoTexto = 'nombre' | 'tituloHero' | 'textoHero' | 'sobreNosotros' | 'direccion' | 'localidad' | 'provincia' | 'telefono' | 'email' | 'colorPrimario' | 'colorSecundario';
+const CAMPOS_TEXTO: CampoTexto[] = ['nombre', 'tituloHero', 'textoHero', 'sobreNosotros', 'direccion', 'localidad', 'provincia', 'telefono', 'email', 'colorPrimario', 'colorSecundario'];
 
 type CampoBanco = 'titular' | 'banco' | 'cbu' | 'alias' | 'cuit' | 'instrucciones';
 const CAMPOS_BANCO: CampoBanco[] = ['titular', 'banco', 'cbu', 'alias', 'cuit', 'instrucciones'];
 
 const vacioRedes = () => Object.fromEntries(REDES.map((r) => [r, ''])) as Record<Red, string>;
 const form = reactive({
-  nombre: '', tituloHero: '', textoHero: '', sobreNosotros: '', direccion: '', telefono: '', email: '',
+  nombre: '', tituloHero: '', textoHero: '', sobreNosotros: '', direccion: '', localidad: '', provincia: '', telefono: '', email: '',
   colorPrimario: '', colorSecundario: '', redes: vacioRedes(), politica: 'ninguno' as PoliticaCancelacion, diasLimite: '1',
   banco: { titular: '', banco: '', cbu: '', alias: '', cuit: '', instrucciones: '' } as Record<CampoBanco, string>,
 });

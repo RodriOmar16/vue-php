@@ -11,12 +11,8 @@ declare module 'vue-router' {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // ---------- Sitio público ----------
-    {
-      path: '/',
-      component: () => import('@/layouts/LayoutPublico.vue'),
-      children: [{ path: '', name: 'inicio', component: () => import('@/views/general/Inicio.vue') }],
-    },
+    // ---------- Portada del panel (el sitio público de reservas es otro proyecto: sitio-reservas) ----------
+    { path: '/', name: 'inicio', component: () => import('@/views/general/Inicio.vue') },
     { path: '/home', redirect: { name: 'inicio' } },
 
     // ---------- Back office (equivalente al /wp-admin) ----------
@@ -25,6 +21,18 @@ const router = createRouter({
       name: 'admin-login',
       component: () => import('@/views/admin/LoginAdmin.vue'),
       meta: { soloInvitado: true },
+    },
+    {
+      path: '/admin/olvide',
+      name: 'admin-olvide',
+      component: () => import('@/views/admin/OlvidePassword.vue'),
+      meta: { soloInvitado: true },
+    },
+    {
+      // se abre desde el mail: sin restricciones (quien tiene una sesión abierta también puede cambiar su clave)
+      path: '/admin/restablecer',
+      name: 'admin-restablecer',
+      component: () => import('@/views/admin/RestablecerPassword.vue'),
     },
     {
       path: '/admin',

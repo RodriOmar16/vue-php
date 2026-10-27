@@ -30,6 +30,7 @@ async function montar(rutaInicial = '/admin/login') {
       { path: '/admin', name: 'admin-inicio', component: vacio },
       { path: '/admin/equipo', name: 'equipo', component: vacio },
       { path: '/', name: 'inicio', component: vacio },
+      { path: '/admin/olvide', name: 'admin-olvide', component: vacio },
     ],
   });
   await router.push(rutaInicial);
@@ -53,6 +54,13 @@ describe('LoginAdmin', () => {
     sessionStorage.clear();
     document.body.innerHTML = '';
     vi.resetAllMocks();
+  });
+
+  it('ofrece recuperar la contraseña, con un enlace a la pantalla de «olvidé»', async () => {
+    const { wrapper } = await montar();
+    const enlace = wrapper.find('a[href="/admin/olvide"]');
+    expect(enlace.exists()).toBe(true);
+    expect(enlace.text()).toContain('¿Olvidaste tu contraseña?');
   });
 
   it('con datos vacíos o email inválido muestra los errores y NO llama a la API', async () => {

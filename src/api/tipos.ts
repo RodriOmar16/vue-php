@@ -390,6 +390,9 @@ export interface MarcaEmpresa {
   textoHero: string | null;
   sobreNosotros: string | null;
   direccion: string | null;
+  /** dónde queda: el sitio público permite buscar y filtrar por ella */
+  localidad: string | null;
+  provincia: string | null;
   telefono: string | null;
   email: string | null;
   redes: Partial<Record<Red, string>> | null;
@@ -439,6 +442,8 @@ export interface CambiosMarca {
   textoHero?: string | null;
   sobreNosotros?: string | null;
   direccion?: string | null;
+  localidad?: string | null;
+  provincia?: string | null;
   telefono?: string | null;
   email?: string | null;
   redes?: Partial<Record<Red, string>> | null;

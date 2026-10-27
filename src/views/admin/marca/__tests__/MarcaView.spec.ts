@@ -21,7 +21,7 @@ vi.mock('@/api/marca', async (original) => ({
 
 const MARCA: MarcaEmpresa = {
   slug: 'los-pinos', nombre: 'Los Pinos', colorPrimario: '#1e3a8a', colorSecundario: null, tituloHero: 'Tu fiesta',
-  textoHero: null, sobreNosotros: 'Hace 10 años', direccion: 'Calle 1', telefono: '11 5555', email: 'hola@pinos.com',
+  textoHero: null, sobreNosotros: 'Hace 10 años', direccion: 'Calle 1', localidad: 'Córdoba', provincia: 'Córdoba', telefono: '11 5555', email: 'hola@pinos.com',
   redes: { instagram: 'https://instagram.com/pinos' }, datosTransferencia: null, politicaCancelacionCliente: 'ninguno', diasLimiteCancelacionCliente: 1, logoUrl: null,
 };
 const marca = (extra: Partial<MarcaEmpresa> = {}): MarcaEmpresa => ({ ...MARCA, ...extra });
@@ -65,6 +65,43 @@ describe('MarcaView', () => {
     vi.resetAllMocks();
   });
   afterEach(() => wrapper?.unmount());
+
+  describe('localidad y provincia', () => {
+    it('muestra lo guardado', async () => {
+      await montar(marca({ localidad: 'Rosario', provincia: 'Santa Fe' }));
+      expect(campo('Localidad').element.value).toBe('Rosario');
+      expect(campo('Provincia').element.value).toBe('Santa Fe');
+    });
+
+    it('envía solo lo que cambió, sin espacios sobrantes', async () => {
+      await montar();
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca({ localidad: 'Villa Carlos Paz' }));
+      await escribir('Localidad', '  Villa Carlos Paz  ');
+      await guardar();
+      expect(enviado()).toEqual({ localidad: 'Villa Carlos Paz' });
+    });
+
+    it('vaciarlas envía null (la API lo interpreta como «quitar»)', async () => {
+      await montar();
+      vi.mocked(api.actualizarMarca).mockResolvedValue(marca({ localidad: null, provincia: null }));
+      await escribir('Localidad', '');
+      await escribir('Provincia', '   ');
+      await guardar();
+      expect(enviado()).toEqual({ localidad: null, provincia: null });
+    });
+
+    it('rechaza más de 100 caracteres', async () => {
+      await montar();
+      await escribir('Localidad', 'x'.repeat(101));
+      await guardar();
+      expect(api.actualizarMarca).not.toHaveBeenCalled();
+    });
+
+    it('el empleado las ve pero no las puede cambiar', async () => {
+      await montar(marca(), 'empleado');
+      expect(campo('Localidad').element.disabled).toBe(true);
+    });
+  });
 
   describe('cancelación del cliente', () => {
     const radio = (valor: string) => document.querySelector<HTMLInputElement>(`input[type="radio"][value="${valor}"]`);
