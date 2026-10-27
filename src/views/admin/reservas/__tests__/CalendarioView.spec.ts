@@ -217,4 +217,179 @@ describe('CalendarioView', () => {
     expect(wrapper.find('[data-testid="dia-2027-03-15"]').classes()).toContain('calendario__celda--hoy');
     expect(wrapper.find('[data-testid="dia-2027-03-16"]').classes()).not.toContain('calendario__celda--hoy');
   });
+
+  describe('vista semanal', () => {
+    // hoy es lunes 15/03/2027 12:00 (hora local): la semana va del 15 al 21
+    const columna = (fecha: string) => wrapper.find(`[data-testid="columna-${fecha}"]`);
+    const bloques = (fecha: string) => columna(fecha).findAll('[data-testid="bloque"]');
+    const irASemana = async () => {
+      await clic(botonPorTexto('Semana'));
+      await flushPromises();
+    };
+
+    it('el selector cambia a la semana de hoy: título, rango pedido (con el domingo anterior) y cierres en instantes', async () => {
+      await montar([]);
+      expect(wrapper.find('[data-testid="semana"]').exists()).toBe(false);
+      await irASemana();
+      expect(wrapper.find('[data-testid="titulo-semana"]').text()).toBe('Semana del 15 al 21 de marzo de 2027');
+      expect(wrapper.find('[data-testid="grilla"]').exists()).toBe(false); // ya no está la grilla del mes
+      expect(ultimaConsulta()).toEqual({ desde: '2027-03-14', hasta: '2027-03-21', pagina: 1, limite: 100 });
+      expect(vi.mocked(apiBloqueos.listarBloqueos).mock.calls.at(-1)![0]).toEqual({ desde: '2027-03-14T03:00:00.000Z', hasta: '2027-03-22T03:00:00.000Z' });
+      expect(wrapper.findAll('[data-testid^="columna-"]')).toHaveLength(7);
+    });
+
+    it('cada reserva queda en su día y su hora: la altura sale de la duración', async () => {
+      await montar([reserva({ fecha: '2027-03-16', horaInicio: '15:00', horaFin: '19:00' })]);
+      await irASemana();
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16', horaInicio: '15:00', horaFin: '19:00' })]));
+      await clic(botonAria('Semana siguiente'));
+      await clic(botonAria('Semana anterior'));
+      const b = bloques('2027-03-16');
+      expect(b).toHaveLength(1);
+      expect(b[0]!.text()).toContain('15:00 Ana Gómez');
+      // la grilla arranca a las 8: 15:00 está 7 h más abajo (7 × 48 px) y dura 4 h (4 × 48 px)
+      expect(b[0]!.attributes('style')).toContain('top: 336px');
+      expect(b[0]!.attributes('style')).toContain('height: 192px');
+      expect(b[0]!.attributes('href')).toContain('/admin/reservas/r1');
+      expect(bloques('2027-03-17')).toHaveLength(0);
+    });
+
+    it('una fiesta que cruza la medianoche se ve en los dos días', async () => {
+      await montar([]);
+      await irASemana();
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16', horaInicio: '21:00', horaFin: '01:00' })]));
+      await clic(botonAria('Semana siguiente'));
+      await clic(botonAria('Semana anterior'));
+      expect(bloques('2027-03-16')[0]!.attributes('title')).toContain('sigue al día siguiente');
+      const siguiente = bloques('2027-03-17');
+      expect(siguiente).toHaveLength(1);
+      expect(siguiente[0]!.attributes('title')).toContain('viene del día anterior');
+      expect(siguiente[0]!.text()).toContain('↳');
+    });
+
+    it('la fiesta del domingo anterior que termina el lunes aparece en el lunes', async () => {
+      await montar([]);
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-14', horaInicio: '22:00', horaFin: '02:00' })]));
+      await irASemana();
+      expect(bloques('2027-03-15')).toHaveLength(1);
+      expect(bloques('2027-03-15')[0]!.text()).toContain('↳');
+    });
+
+    it('dos reservas a la vez (de salones distintos) van una al lado de la otra, y cada una dice su salón', async () => {
+      await montar([]);
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([
+        reserva({ id: 'a', fecha: '2027-03-16', salon: { id: 1, nombre: 'Salón A' } }),
+        reserva({ id: 'b', fecha: '2027-03-16', horaInicio: '16:00', horaFin: '20:00', salon: { id: 2, nombre: 'Salón B' }, cliente: { nombre: 'Beto Díaz', dni: '2' } }),
+      ]));
+      await irASemana();
+      const b = bloques('2027-03-16');
+      expect(b).toHaveLength(2);
+      expect(b[0]!.attributes('style')).toMatch(/left: 0%.*width: 50%|width: 50%.*left: 0%/);
+      expect(b[1]!.attributes('style')).toMatch(/left: 50%/);
+      expect(b[0]!.text()).toContain('Salón A');
+      expect(b[1]!.text()).toContain('Salón B');
+    });
+
+    it('con un solo salón no repite su nombre en cada bloque', async () => {
+      await montar([]);
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16' })]));
+      await irASemana();
+      expect(bloques('2027-03-16')[0]!.text()).not.toContain('Salón Arcoíris');
+    });
+
+    it('los cierres se dibujan como franja en cada día que ocupan', async () => {
+      await montar([], [{ id: 9, salonId: null, desde: '2027-03-17T03:00:00.000Z', hasta: '2027-03-19T03:00:00.000Z', motivo: 'Feriado' }]);
+      await irASemana();
+      for (const d of ['2027-03-17', '2027-03-18']) expect(columna(d).find('[data-testid="cierre-semana"]').text()).toContain('Feriado');
+      expect(columna('2027-03-19').find('[data-testid="cierre-semana"]').exists()).toBe(false);
+    });
+
+    it('si hay algo fuera de 8 a 24, la grilla se amplía para que no quede afuera', async () => {
+      await montar([]);
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16', horaInicio: '06:00', horaFin: '09:00' })]));
+      await irASemana();
+      // arranca a las 6: la reserva está arriba de todo
+      expect(bloques('2027-03-16')[0]!.attributes('style')).toContain('top: 0px');
+      expect(wrapper.text()).toContain('06:00');
+    });
+
+    it('marca la hora de ahora en la columna de hoy (en la zona de la empresa)', async () => {
+      await montar([]);
+      await irASemana();
+      const ahora = columna('2027-03-15').find('[data-testid="ahora"]');
+      expect(ahora.exists()).toBe(true);
+      expect(ahora.attributes('style')).toContain('top: 192px'); // 12:00 locales: 4 h × 48 px bajo las 8
+      expect(columna('2027-03-16').find('[data-testid="ahora"]').exists()).toBe(false);
+    });
+
+    it('navega entre semanas y vuelve con «Hoy»', async () => {
+      await montar([]);
+      await irASemana();
+      await clic(botonAria('Semana siguiente'));
+      expect(wrapper.find('[data-testid="titulo-semana"]').text()).toBe('Semana del 22 al 28 de marzo de 2027');
+      expect(ultimaConsulta()).toMatchObject({ desde: '2027-03-21', hasta: '2027-03-28' });
+      await clic(botonAria('Semana anterior'));
+      await clic(botonAria('Semana anterior'));
+      expect(wrapper.find('[data-testid="titulo-semana"]').text()).toBe('Semana del 8 al 14 de marzo de 2027');
+      await clic(botonPorTexto('Hoy'));
+      expect(wrapper.find('[data-testid="titulo-semana"]').text()).toBe('Semana del 15 al 21 de marzo de 2027');
+    });
+
+    it('al cambiar de vista conserva dónde estaba: del mes de abril va a su primera semana, y de la semana vuelve a su mes', async () => {
+      await montar([]);
+      await clic(botonAria('Mes siguiente')); // abril
+      await irASemana();
+      expect(wrapper.find('[data-testid="titulo-semana"]').text()).toBe('Semana del 29 de marzo al 4 de abril de 2027');
+      await clic(botonPorTexto('Mes'));
+      await flushPromises();
+      expect(wrapper.find('[data-testid="titulo-mes"]').text()).toBe('abril de 2027'); // el jueves 1/4 cae en abril
+    });
+
+    it('tocar el día del encabezado abre el detalle de ese día', async () => {
+      await montar([]);
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16' })]));
+      await irASemana();
+      await clic(botonDia('16/03/2027'));
+      expect(document.querySelector('.v-overlay--active')!.textContent).toContain('15:00 a 19:00 · Ana Gómez');
+    });
+
+    it('las canceladas y vencidas se ocultan salvo que se pidan, también en la semana', async () => {
+      await montar([]);
+      vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16' }), reserva({ id: 'x', fecha: '2027-03-16', estado: 'cancelada', horaInicio: '10:00', horaFin: '12:00' })]));
+      await irASemana();
+      expect(bloques('2027-03-16')).toHaveLength(1);
+      await wrapper.find('input[type="checkbox"]').setValue(true);
+      await flushPromises();
+      expect(bloques('2027-03-16')).toHaveLength(2);
+    });
+
+    it('en celular no hay grilla de horas: lista los días de la semana que tienen algo', async () => {
+      const ancho = window.innerWidth;
+      window.innerWidth = 400;
+      window.dispatchEvent(new Event('resize'));
+      try {
+        await montar([]);
+        vi.mocked(api.listarReservas).mockResolvedValue(pagina([reserva({ fecha: '2027-03-16' })]));
+        await irASemana();
+        expect(wrapper.find('[data-testid="semana"]').exists()).toBe(false);
+        const lista = wrapper.find('[data-testid="lista-movil"]').text();
+        expect(lista).toContain('15:00 · Ana Gómez');
+        expect(lista).not.toContain('17/03/2027');
+      } finally {
+        window.innerWidth = ancho;
+        window.dispatchEvent(new Event('resize'));
+      }
+    });
+
+    it('un error de carga se muestra y se puede reintentar', async () => {
+      await montar([]);
+      await irASemana();
+      vi.mocked(api.listarReservas).mockRejectedValueOnce(new ApiError(0, 'No se pudo conectar con el servidor. Revise su conexión.'));
+      await clic(botonAria('Semana siguiente'));
+      expect(wrapper.text()).toContain('No se pudo conectar');
+      vi.mocked(api.listarReservas).mockResolvedValueOnce(pagina([reserva({ fecha: '2027-03-23' })]));
+      await clic(botonPorTexto('Reintentar'));
+      expect(bloques('2027-03-23')).toHaveLength(1);
+    });
+  });
 });

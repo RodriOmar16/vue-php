@@ -15,12 +15,17 @@
         style="max-width: 240px"
       />
       <v-switch v-model="verInactivas" label="Mostrar canceladas y vencidas" density="compact" hide-details color="primary" />
+      <v-btn-toggle v-model="vista" mandatory density="compact" variant="outlined" divided aria-label="Tipo de vista" data-testid="selector-vista">
+        <v-btn value="mes">Mes</v-btn>
+        <v-btn value="semana">Semana</v-btn>
+      </v-btn-toggle>
     </div>
 
     <div class="d-flex align-center ga-2 mb-3">
-      <v-btn icon variant="text" aria-label="Mes anterior" @click="ir(-1)"><v-icon>fa-solid fa-chevron-left</v-icon></v-btn>
-      <h2 class="text-h6 text-capitalize flex-grow-1 text-center" aria-live="polite" data-testid="titulo-mes">{{ nombreDelMes(anio, mes) }}</h2>
-      <v-btn icon variant="text" aria-label="Mes siguiente" @click="ir(1)"><v-icon>fa-solid fa-chevron-right</v-icon></v-btn>
+      <v-btn icon variant="text" :aria-label="vista === 'mes' ? 'Mes anterior' : 'Semana anterior'" @click="ir(-1)"><v-icon>fa-solid fa-chevron-left</v-icon></v-btn>
+      <h2 v-if="vista === 'mes'" class="text-h6 text-capitalize flex-grow-1 text-center" aria-live="polite" data-testid="titulo-mes">{{ nombreDelMes(anio, mes) }}</h2>
+      <h2 v-else class="text-h6 flex-grow-1 text-center" aria-live="polite" data-testid="titulo-semana">{{ tituloDeSemana(lunes) }}</h2>
+      <v-btn icon variant="text" :aria-label="vista === 'mes' ? 'Mes siguiente' : 'Semana siguiente'" @click="ir(1)"><v-icon>fa-solid fa-chevron-right</v-icon></v-btn>
       <v-btn variant="tonal" @click="irAHoy">Hoy</v-btn>
     </div>
 
@@ -31,8 +36,21 @@
 
     <v-progress-linear v-if="cargando" indeterminate class="mb-2" />
 
+    <!-- Semana con las horas en vertical (pantallas medianas y grandes) -->
+    <CalendarioSemana
+      v-if="vista === 'semana' && !movil"
+      :dias="diasSemana"
+      :reservas="reservas"
+      :cierres="cierres"
+      :zona="zona"
+      :hoy="hoy"
+      :ahora="ahora"
+      :ver-inactivas="verInactivas"
+      @abrir-dia="abrirDia"
+    />
+
     <!-- Grilla del mes (pantallas medianas y grandes) -->
-    <div v-if="!movil" class="calendario" role="grid" :aria-label="`Calendario de ${nombreDelMes(anio, mes)}`" data-testid="grilla">
+    <div v-else-if="vista === 'mes' && !movil" class="calendario" role="grid" :aria-label="`Calendario de ${nombreDelMes(anio, mes)}`" data-testid="grilla">
       <div class="calendario__fila" role="row">
         <div v-for="d in DIAS" :key="d" class="calendario__cabecera" role="columnheader">{{ d }}</div>
       </div>
@@ -67,7 +85,7 @@
       </div>
     </div>
 
-    <!-- Celular: lista de los días que tienen algo -->
+    <!-- Celular: lista de los días que tienen algo (en las dos vistas) -->
     <div v-else data-testid="lista-movil">
       <v-list v-if="diasConAlgo.length" lines="two">
         <template v-for="dia in diasConAlgo" :key="dia">
@@ -76,7 +94,7 @@
           <v-list-item v-for="r in reservasDe(dia)" :key="r.id" :to="{ name: 'admin-reserva-detalle', params: { id: r.id } }" :title="`${r.horaInicio} · ${r.cliente.nombre}`" :subtitle="`${r.salon.nombre} · ${ETIQUETA_ESTADO_RESERVA[r.estado]}`" />
         </template>
       </v-list>
-      <p v-else-if="!cargando" class="text-medium-emphasis text-center my-6">No hay reservas ni cierres este mes.</p>
+      <p v-else-if="!cargando" class="text-medium-emphasis text-center my-6">No hay reservas ni cierres {{ vista === 'mes' ? 'este mes' : 'esta semana' }}.</p>
     </div>
 
     <v-dialog v-model="dia.visible" max-width="560" scrollable>
@@ -105,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { listarBloqueos } from '@/api/bloqueos';
 import { ApiError } from '@/api/http';
@@ -113,7 +131,9 @@ import { listarReservas } from '@/api/reservas';
 import { listarSalones } from '@/api/salones';
 import { COLOR_ESTADO_RESERVA, ETIQUETA_ESTADO_RESERVA, type Bloqueo, type ReservaListada, type Salon } from '@/api/tipos';
 import { useSesionStore } from '@/store/sesion';
-import { agruparCierresPorDia, agruparReservasPorDia, moverMes, nombreDelMes, rangoDeGrilla, semanasDelMes } from '@/utils/calendario';
+import CalendarioSemana from './CalendarioSemana.vue';
+import { agruparCierresPorDia, agruparReservasPorDia, moverMes, nombreDelMes, primerDiaDelMes, rangoDeGrilla, semanasDelMes } from '@/utils/calendario';
+import { diasDeSemana, lunesDeSemana, rangoDeSemana, tituloDeSemana } from '@/utils/semana';
 import { formatearImporte } from '@/utils/dinero';
 import { formatearDia, isoALocal, localAIso, sumarDias } from '@/utils/zonaHoraria';
 
@@ -131,6 +151,17 @@ const hoy = ref(hoyLocal());
 const anio = ref(Number(hoy.value.slice(0, 4)));
 const mes = ref(Number(hoy.value.slice(5, 7)));
 
+const vista = ref<'mes' | 'semana'>('mes');
+/** lunes de la semana que se muestra (vista semanal) */
+const lunes = ref(lunesDeSemana(hoy.value));
+/** el «ahora» de la línea roja de la semana; se refresca cada minuto */
+const ahora = ref(new Date());
+let reloj: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  reloj = setInterval(() => (ahora.value = new Date()), 60_000);
+});
+onBeforeUnmount(() => clearInterval(reloj));
+
 const salones = ref<Salon[]>([]);
 const salonId = ref<number | null>(null);
 const verInactivas = ref(false);
@@ -142,16 +173,17 @@ const error = ref('');
 let pedido = 0;
 
 const semanas = computed(() => semanasDelMes(anio.value, mes.value));
-const rango = computed(() => rangoDeGrilla(anio.value, mes.value));
+const rango = computed(() => (vista.value === 'mes' ? rangoDeGrilla(anio.value, mes.value) : rangoDeSemana(lunes.value)));
+const diasSemana = computed(() => diasDeSemana(lunes.value));
 const delMes = (fecha: string) => Number(fecha.slice(5, 7)) === mes.value;
 
 const porDia = computed(() => agruparReservasPorDia(reservas.value, verInactivas.value));
 const cierresPorDia = computed(() => agruparCierresPorDia(cierres.value, zona.value, rango.value.desde, rango.value.hasta));
 const reservasDe = (fecha: string) => porDia.value.get(fecha) ?? [];
 const cierresDe = (fecha: string) => cierresPorDia.value.get(fecha) ?? [];
-const diasConAlgo = computed(() =>
-  semanas.value.flat().filter((d) => delMes(d) && (reservasDe(d).length > 0 || cierresDe(d).length > 0)),
-);
+// días que se listan en el celular: los del mes (sin los de los meses vecinos) o los 7 de la semana
+const diasListados = computed(() => (vista.value === 'mes' ? semanas.value.flat().filter(delMes) : diasSemana.value));
+const diasConAlgo = computed(() => diasListados.value.filter((d) => reservasDe(d).length > 0 || cierresDe(d).length > 0));
 const nombreSalon = (id: number) => salones.value.find((s) => s.id === id)?.nombre ?? 'salón';
 
 const dia = reactive({ visible: false, fecha: '' });
@@ -161,13 +193,28 @@ const abrirDia = (fecha: string) => {
 };
 
 function ir(delta: number) {
-  ({ anio: anio.value, mes: mes.value } = moverMes(anio.value, mes.value, delta));
+  if (vista.value === 'mes') ({ anio: anio.value, mes: mes.value } = moverMes(anio.value, mes.value, delta));
+  else lunes.value = sumarDias(lunes.value, 7 * delta);
 }
 function irAHoy() {
   hoy.value = hoyLocal();
   anio.value = Number(hoy.value.slice(0, 4));
   mes.value = Number(hoy.value.slice(5, 7));
+  lunes.value = lunesDeSemana(hoy.value);
 }
+
+// Al cambiar de vista se conserva el "dónde estaba": del mes a la semana de hoy (o la primera del mes si hoy no está en él);
+// de la semana al mes en que cae su jueves (la mayoría de sus días).
+watch(vista, (nueva) => {
+  if (nueva === 'semana') {
+    const hoyEnElMes = Number(hoy.value.slice(0, 4)) === anio.value && Number(hoy.value.slice(5, 7)) === mes.value;
+    lunes.value = lunesDeSemana(hoyEnElMes ? hoy.value : primerDiaDelMes(anio.value, mes.value));
+  } else {
+    const jueves = sumarDias(lunes.value, 3);
+    anio.value = Number(jueves.slice(0, 4));
+    mes.value = Number(jueves.slice(5, 7));
+  }
+});
 
 /** Trae TODAS las reservas del rango, página por página (la API devuelve hasta 100 por vez). */
 async function reservasDelRango(desde: string, hasta: string, salon?: number) {
@@ -201,7 +248,7 @@ async function cargar() {
   }
 }
 
-watch([anio, mes, salonId], cargar);
+watch([anio, mes, lunes, vista, salonId], cargar);
 onMounted(async () => {
   try {
     salones.value = (await listarSalones(false)).filter((s) => !s.inhabilitado);
