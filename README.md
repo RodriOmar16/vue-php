@@ -31,7 +31,7 @@ Requisito: la API corriendo (por defecto en `http://localhost:3000`).
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:5174 (puerto fijo; agregarlo a CORS_ORIGINS de la API)
 ```
 
 | Variable de entorno | Para qué sirve | Por defecto |

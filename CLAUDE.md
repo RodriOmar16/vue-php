@@ -6,11 +6,11 @@ Front multi-tenant para salones de fiestas: sitio público para clientes (en con
 Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no soporta TS 7) · Vite · Vuetify 3 · Pinia · Vue Router 4 · Vitest + @vue/test-utils + jsdom. Sin axios: cliente `fetch` propio.
 
 ## Comandos
-- `npm run dev` (o `serve`) — dev server en http://localhost:5173
+- `npm run dev` (o `serve`) — dev server en http://localhost:5174 (puerto fijo con `strictPort` en `vite.config.js`: si está ocupado no arranca en otro, porque el CORS de la API solo permite los orígenes de `CORS_ORIGINS`)
 - `npm run typecheck` — `vue-tsc --noEmit`
 - `npm run build` — typecheck + `vite build`
 - `npm run test:unit` — Vitest (`npx vitest run` para una pasada)
-- La API debe estar corriendo (`npm run start:dev` en `api-reservas`, puerto 3000). Los orígenes permitidos por CORS se configuran en su `.env` (`CORS_ORIGINS`, por defecto `http://localhost:5173`).
+- La API debe estar corriendo (`npm run start:dev` en `api-reservas`, puerto 3000 por defecto; en esta máquina el 3000 lo usa otra app y la API corre en el 3010 con `VITE_API_URL` en `.env.development.local`). Los orígenes permitidos por CORS se configuran en su `.env` (`CORS_ORIGINS`, debe incluir `http://localhost:5174`).
 
 ## Entorno
 - `.env.example` documenta `VITE_API_URL` (default `http://localhost:3000/api`).
