@@ -20,7 +20,7 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 - `api/` — `http.ts` (cliente tipado `ClienteHttp`, `ApiError`), `cliente.ts` (instancia única), `auth.ts`, `tipos.ts` (tipos de respuesta escritos a mano: la API aún no documenta respuestas en Swagger), `token.ts`. Un archivo por recurso a medida que se agreguen.
 - `store/` — Pinia: `sesion.ts` (token, perfil, rol), `genericos.ts` (loading + snackbar global).
 - `router/` — `index.ts` (rutas y `beforeEach`), `guardias.ts` (decisión pura de acceso, testeada), `menu.ts` (menú lateral por rol), `redireccion.ts` (anti open-redirect), `autologin.ts`.
-- `layouts/` — `LayoutPublico` (sitio) y `LayoutAdmin` (barra + menú lateral por rol).
+- `layouts/` — `LayoutAdmin` (barra + menú lateral por rol). El sitio público es el proyecto `sitio-reservas`.
 - `views/admin/` — `LoginAdmin`, `CambiarPassword`, `AdminInicio`. `views/general/` — sitio público. `views/_pendientes/` — pantallas del diseño viejo, sin ruta ni compilación, a rehacer una por rebanada (ver su README).
 - `components/utils/` — `Loading`, `SnackBar` (ya TS); el resto (`FechaPicker`, `ModalConfirmar`, etc.) sigue en JS y se convierte al usarlo.
 - `test/ayudas.ts` (en `src/test/`): ayudantes comunes para probar pantallas con diálogos de Vuetify. Tests junto al código en `__tests__/`.
@@ -68,7 +68,7 @@ Vue 3 (`<script setup lang="ts">`) · TypeScript 6.0.3 (fijo: `vue-tsc` aún no 
 - `/admin/pagina` («Mi página», solo dueño): prende/apaga y reordena secciones (flechas, sin arrastrar), encabezado con foto o solo color, mapa y hasta 10 preguntas frecuentes. Avisa cuando una sección prendida no tiene contenido (lo carga en Marca) y que los cambios pueden tardar hasta un minuto en verse (caché del sitio). `api/landing.ts`.
 
 ## Raíz «/» del panel
-- `/` (`views/general/Inicio.vue`) es una portada mínima del panel: «Ingresar» (o «Ir al panel» si hay sesión) y un enlace al sitio público (`VITE_SITIO_URL`). Nunca redirige sola. `LayoutPublico` y `Navigation` (restos del sitio viejo) ya no se usan.
+- `/` (`views/general/Inicio.vue`) es una portada mínima del panel: «Ingresar» (o «Ir al panel» si hay sesión) y un enlace al sitio público (`VITE_SITIO_URL`). Nunca redirige sola. (`LayoutPublico` y `Navigation`, restos del sitio viejo, se borraron.)
 - El login (`LoginAdmin.vue`) deja aire entre campos y usa mensajes e íconos de error más chicos.
 
 ## Olvidé mi contraseña (panel)
